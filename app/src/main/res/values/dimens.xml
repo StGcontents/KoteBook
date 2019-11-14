@@ -1,0 +1,38 @@
+<resources>
+    <!-- Base Activity -->
+    <dimen name="default_margin">16dp</dimen>
+    <dimen name="recycler_side_padding">8dp</dimen>
+    <dimen name="fab_size">48dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="secondary_fabs_height">80dp</dimen>
+
+    <!-- Writing Fragment -->
+    <dimen name="bullet_point_start_padding">-6dp</dimen>
+    <dimen name="bullet_point_editor_top_margin">12sp</dimen>
+    <dimen name="bullet_point_editor_margin">16dp</dimen>
+    <dimen name="bullet_point_et_margin">4dp</dimen>
+    <dimen name="writing_title_margin">16dp</dimen>
+
+    <!-- Cards -->
+    <dimen name="card_min_height">64dp</dimen>
+    <dimen name="card_max_height">160dp</dimen>
+
+    <!-- SPs -->
+    <dimen name="note_text_sp">16sp</dimen>
+    <dimen name="note_title_sp">20sp</dimen>
+    <dimen name="card_margin">8dp</dimen>
+    <dimen name="card_corners">8dp</dimen>
+    <dimen name="card_text_margin">16dp</dimen>
+    <dimen name="card_text_end_margin">32dp</dimen>
+    <dimen name="card_text_min_height">32dp</dimen>
+    <dimen name="card_title_min_height">64dp</dimen>
+    <dimen name="card_text_top_margin">8dp</dimen>
+    <dimen name="bullet_point_editor_end_margin_init">32dp</dimen>
+    <dimen name="bullet_point_editor_end_margin_fullscreen">16dp</dimen>
+    <dimen name="card_text_margin_bottom">8dp</dimen>
+    <dimen name="bullet_point_height">32dp</dimen>
+    <dimen name="small_fab_size">24dp</dimen>
+    <dimen name="palette_radius">16dp</dimen>
+    <dimen name="small_fab_elevation">1dp</dimen>
+    <dimen name="visualizer_item_size">2dp</dimen>
+</resources>

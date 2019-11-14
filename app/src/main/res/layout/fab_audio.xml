@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content" android:layout_height="wrap_content"
+    android:elevation="4dp"
+    android:layout_gravity="start">
+
+    <View
+        android:id="@+id/circlet"
+        android:layout_margin="@dimen/fab_margin"
+        android:layout_width="@dimen/fab_size"
+        android:layout_height="@dimen/fab_size"
+        android:layout_alignParentStart="true"
+        android:background="@drawable/circle"
+        android:foreground="@android:color/transparent"
+        android:focusable="false"/>
+
+    <ImageButton
+        android:id="@+id/fab"
+        android:src="@drawable/mic"
+        android:background="@null"
+        android:layout_alignParentStart="true"
+        android:foreground="@drawable/circular_ripple"
+        android:layout_margin="@dimen/fab_margin"
+        android:layout_width="@dimen/fab_size"
+        android:layout_height="@dimen/fab_size" />
+
+    <com.stgi.kotebook.VisualizerView
+        android:id="@+id/visualizer"
+        android:visibility="gone"
+        android:padding="6dp"
+        android:layout_alignParentStart="true"
+        android:layout_margin="@dimen/fab_margin"
+        android:layout_width="@dimen/fab_size"
+        android:layout_height="@dimen/fab_size" />
+
+    <FrameLayout
+        android:layout_gravity="end|center_vertical"
+        android:orientation="horizontal"
+        android:id="@+id/swipeView"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="-16dp"
+        android:alpha="0.5"
+        android:layout_toEndOf="@+id/circlet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/swipe_right" />
+        <ImageView
+            android:layout_marginStart="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/swipe_right" />
+    </FrameLayout>
+
+</RelativeLayout>

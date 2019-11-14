@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:minHeight="@dimen/card_min_height"
+    android:maxHeight="@dimen/card_max_height"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp">
+
+    <RelativeLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/card_title_min_height">
+
+        <TextView
+            android:id="@+id/audioTitleTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/card_text_margin"
+            android:layout_marginStart="@dimen/card_text_margin"
+            android:layout_marginEnd="@dimen/card_text_end_margin"
+            android:textStyle="italic|bold"
+            android:layout_alignParentTop="true"
+            android:textSize="@dimen/note_title_sp"
+            android:maxLines="2"
+            android:gravity="start|top"
+            android:ellipsize="end" />
+
+        <ImageButton
+            android:id="@+id/playButton"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_below="@id/audioTitleTv"
+            android:layout_centerHorizontal="true"
+            android:background="@null"
+            android:src="@drawable/play"
+            android:scaleType="fitCenter"
+            android:layout_marginTop="@dimen/card_text_top_margin"
+            android:layout_marginBottom="@dimen/card_text_margin"
+            android:textSize="@dimen/note_text_sp" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_margin="4dp"
+        android:id="@+id/options"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|top"
+        android:orientation="vertical" >
+
+        <ImageButton
+            android:layout_marginBottom="4dp"
+            android:id="@+id/pinButton"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:background="@null"
+            android:rotation="45"
+            android:alpha="0.5"
+            android:tag="pin"
+            android:src="@drawable/smart_pin" />
+
+        <ImageButton
+            android:id="@+id/removeButton"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:background="@null"
+            android:alpha="0.5"
+            android:tag="rmv"
+            android:src="@drawable/delete" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

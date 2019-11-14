@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#FFEBEE</color>
+    <color name="colorPrimaryDark">#FFCDD2</color>
+    <color name="colorAccent">#E57373</color>
+
+    //NOTES
+    <color name="noteColor0">#EF9A9A</color>
+    <color name="noteColor1">#E57373</color>
+    <color name="noteColor2">#EF5350</color>
+    <color name="noteColor3">#F44336</color>
+    <color name="noteColor4">#E53935</color>
+    <color name="noteColor5">#B71C1C</color>
+    <color name="noteColor6">#FF1744</color>
+    <color name="noteColor7">#880E4F</color>
+    <color name="noteColor8">#AD1457</color>
+    <color name="noteColor9">#6A1B9A</color>
+    <color name="noteColor10">#AB47BC</color>
+    <color name="noteColor11">#311B92</color>
+    <color name="noteColor12">#7E57C2</color>
+    <color name="noteColor13">#1A237E</color>
+    <color name="noteColor14">#3F51B5</color>
+    <color name="noteColor15">#536DFE</color>
+    <color name="noteColor16">#2196F3</color>
+    <color name="noteColor17">#FF7043</color>
+    <color name="noteColor18">#006064</color>
+    <color name="noteColor19">#00838F</color>
+    <color name="noteColor20">#00695C</color>
+    <color name="noteColor21">#F4511E</color>
+    <color name="noteColor22">#1B5E20</color>
+    <color name="noteColor24">#33691E</color>
+    <color name="noteColor23">#4CAF50</color>
+    <color name="noteColor25">#CDDC39</color>
+    <color name="noteColor26">#F9A825</color>
+    <color name="noteColor27">#FF6F00</color>
+    <color name="noteColor28">#5D4037</color>
+    <color name="noteColor29">#F4511E</color>
+    <color name="noteColor30">#3E2723</color>
+    <color name="noteColor31">#795548</color>
+    <color name="noteColor32">#607D8B</color>
+    <color name="noteColor33">#A1887F</color>
+    <color name="noteColor34">#422f25</color>
+    <color name="noteColor35">#be945b</color>
+    <color name="noteColor36">#C2185B</color>
+
+
+</resources>

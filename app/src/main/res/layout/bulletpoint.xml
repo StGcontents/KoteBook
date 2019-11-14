@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/bulletPoint"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="@dimen/bullet_point_start_padding"
+    android:clipToPadding="false">
+
+    <androidx.appcompat.widget.AppCompatCheckBox
+        android:id="@+id/checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="false"
+        android:text="@null"
+        android:layout_gravity="top|start"/>
+
+    <EditText
+        android:gravity="start|top"
+        android:textCursorDrawable="@null"
+        android:textSize="@dimen/note_text_sp"
+        android:layout="@layout/edit_text_layout"
+        android:id="@+id/editText"
+        android:inputType="textNoSuggestions|textMultiLine|textCapSentences"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/bullet_point_et_margin"
+        android:layout_marginBottom="@dimen/bullet_point_et_margin"
+        android:text=""
+        android:background="@null" />
+
+</LinearLayout>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/constraintLayout"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="80dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <View
+        android:id="@+id/bgView"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@drawable/transition"
+        android:layout_width="0dp"
+        android:layout_height="0dp" />
+
+    <ScrollView
+        android:id="@+id/editorScrollView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/secondaryButton"
+        app:layout_constraintEnd_toStartOf="@+id/primaryButton">
+
+        <com.stgi.kotebook.BulletPointTextEditor
+            android:id="@+id/et_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:maxLines="3"
+            android:inputType="textNoSuggestions"
+            android:visibility="visible"
+            android:autofillHints="false" />
+    </ScrollView>
+
+    <EditText
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/secondaryButton"
+        app:layout_constraintEnd_toStartOf="@+id/primaryButton"
+        app:layout_constraintHeight_max="80dp"
+        android:maxLength="24"
+        android:id="@+id/audioEt"
+        android:background="@null"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:maxLines="3"
+        android:inputType="textNoSuggestions"
+        android:autofillHints="false"
+        android:visibility="gone"/>
+
+    <ImageButton
+        android:id="@+id/primaryButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:background="@null"
+        android:foreground="@drawable/circular_ripple"
+        android:layout_margin="16dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:contentDescription="@null" />
+
+    <ImageButton
+        android:id="@+id/secondaryButton"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="16dp"
+        android:scaleType="center"
+        android:background="@null"
+        android:foreground="@drawable/circular_ripple"
+        app:layout_constraintWidth_min="48dp"
+        app:layout_constraintHeight_min="48dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

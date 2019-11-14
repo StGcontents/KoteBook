@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".WritingFragment"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <View
+        android:id="@+id/fakeView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/writing_transition"
+        android:orientation="vertical"
+        android:clipToPadding="false"
+        tools:ignore="MissingConstraints" />
+
+    <FrameLayout
+        android:id="@+id/titleFrame"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/writing_title_margin"
+        android:layout_marginStart="@dimen/writing_title_margin"
+        android:layout_marginEnd="@dimen/writing_title_margin"
+        app:layout_constraintStart_toStartOf="@+id/fakeView"
+        app:layout_constraintEnd_toEndOf="@+id/fakeView"
+        app:layout_constraintTop_toTopOf="@+id/fakeView">
+
+        <EditText
+            android:id="@+id/titleEt"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:hint="@string/insert_title"
+            android:textCursorDrawable="@null"
+            android:inputType="textNoSuggestions"
+            android:maxLength="24"
+            android:gravity="start|top"
+            android:textStyle="italic|bold"
+            android:textSize="@dimen/note_title_sp"/>
+    </FrameLayout>
+
+    <ScrollView
+        android:id="@+id/bulletPointScrollView"
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="@dimen/bullet_point_editor_margin"
+
+        android:paddingBottom="@dimen/bullet_point_editor_margin"
+        android:clipToPadding="false"
+        android:focusable="false"
+        app:layout_constraintStart_toStartOf="@+id/fakeView"
+        app:layout_constraintEnd_toEndOf="@+id/fakeView"
+        app:layout_constraintTop_toBottomOf="@+id/titleFrame"
+        app:layout_constraintBottom_toBottomOf="@+id/fakeView">
+
+        <com.stgi.kotebook.BulletPointTextEditor
+            android:orientation="vertical"
+            android:id="@+id/bulletPointEditor"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:focusable="false" />
+    </ScrollView>
+
+    <ImageButton
+        android:id="@+id/paintButton"
+        android:layout_width="@dimen/fab_size"
+        android:layout_height="@dimen/fab_size"
+        android:layout_margin="@dimen/fab_margin"
+        android:background="@drawable/circle"
+        android:contentDescription="@null"
+        android:src="@drawable/paint"
+        android:elevation="2dp"
+        android:foreground="@drawable/circular_ripple"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="parent"/>
+
+    <ImageButton
+        android:id="@+id/bulletsButton"
+        android:layout_width="@dimen/fab_size"
+        android:layout_height="@dimen/fab_size"
+        android:layout_margin="@dimen/fab_margin"
+        android:background="@drawable/circle"
+        android:contentDescription="@null"
+        android:src="@drawable/bullets"
+        android:elevation="2dp"
+        android:foreground="@drawable/circular_ripple"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <ImageButton
+        android:id="@+id/fakeButton"
+        android:layout_width="@dimen/fab_size"
+        android:layout_height="@dimen/fab_size"
+        android:layout_margin="@dimen/fab_margin"
+        android:background="@drawable/circle"
+        android:contentDescription="@null"
+        android:elevation="2dp"
+        android:focusable="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
