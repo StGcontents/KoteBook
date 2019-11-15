@@ -21,11 +21,22 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.fragment_writing.*
 import kotlinx.android.synthetic.main.fragment_writing.view.*
-import kotlinx.android.synthetic.main.layout_retracted.*
 import android.animation.ValueAnimator
 import android.content.Context
 import android.view.*
 import androidx.core.view.forEach
+import kotlinx.android.synthetic.main.fragment_audio.*
+import kotlinx.android.synthetic.main.fragment_audio.view.*
+import kotlinx.android.synthetic.main.fragment_writing.fakeView
+import kotlinx.android.synthetic.main.fragment_writing.paintButton
+import kotlinx.android.synthetic.main.fragment_writing.paletteMask
+import kotlinx.android.synthetic.main.fragment_writing.titleEt
+import kotlinx.android.synthetic.main.fragment_writing.titleFrame
+import kotlinx.android.synthetic.main.fragment_writing.view.fakeView
+import kotlinx.android.synthetic.main.fragment_writing.view.paintButton
+import kotlinx.android.synthetic.main.fragment_writing.view.paletteMask
+import kotlinx.android.synthetic.main.fragment_writing.view.titleEt
+import kotlin.math.max
 
 
 const val RESULT_OK = "RESULT_OK"
@@ -39,7 +50,7 @@ private const val ARG_H = "H"
 private const val ANGLE = 90.0f
 private const val BASE_ROW = 4
 
-class WritingFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
+abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
 
     var note: Note? = null
 
@@ -47,6 +58,20 @@ class WritingFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
     private var isPaletteShown = false
 
     private var startingSet: ConstraintSet? = null
+
+    protected val textFocusListener = View.OnFocusChangeListener { v, b ->
+        hidePalette()
+        v as EditText
+        val imm =
+            activity?.getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager
+        if (b) {
+            activity?.let {
+                (it as MainActivity).pushStatus(STATUS_CONFIRM, ConfirmStrategy(it))
+            }
+            imm.showSoftInput(v, 0)
+            v.setSelection(v.text.length)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,54 +82,31 @@ class WritingFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
 
     private fun getConstraintLayout() = view as ConstraintLayout
 
+    abstract fun getLayout(): Int
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_writing, container, false) as ConstraintLayout
+        val view = inflater.inflate(getLayout(), container, false) as ConstraintLayout
 
         view.visibility = View.INVISIBLE
-        view.setOnTouchListener { _, _ -> hidePalette(); true }
 
         view.fakeView.setOnTouchListener { _, _ ->
-            activity?.let {
-                (it as MainActivity).pushStatus(STATUS_CONFIRM, ConfirmStrategy(it))
-            }
+            hidePalette()
+            if (!isEditing)
+                (activity?.let { (it as MainActivity).pushStatus(STATUS_CONFIRM, ConfirmStrategy(it)) })
             true
         }
 
-        //view.bulletPointScrollView.setOnTouchListener { _, _ -> hidePalette(); bulletPointEditor.requestFocus(); false }
-
-        view.bulletsButton.setOnClickListener { bulletPointEditor.addBulletPoint(); hidePalette() }
         view.paintButton.setOnClickListener { showOrHidePalette(shouldShow = !isPaletteShown) }
-
-        val l = View.OnFocusChangeListener { v, b ->
-            hidePalette()
-            v as EditText
-            val imm =
-                activity?.getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager
-            if (b) {
-                activity?.let {
-                    (it as MainActivity).pushStatus(STATUS_CONFIRM, ConfirmStrategy(it))
-                }
-                imm.showSoftInput(v, 0)
-                v.setSelection(v.text.length)
-            } //else imm.hideSoftInputFromWindow(v.windowToken, 0)
-        }
+        view.paletteMask.setOnTouchListener { _, _ -> true }
 
         view.titleEt.setText(note!!.title)
-        view.titleEt.onFocusChangeListener = l
+        view.titleEt.onFocusChangeListener = textFocusListener
 
-        view.bulletPointEditor.onFocusChangeListener = l
-        view.bulletPointEditor.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { _, _ ->
-            hidePalette()
-            if (bulletPointEditor == null) return@OnCheckedChangeListener
-            val editedText = bulletPointEditor.getText()
-            val data = note!!.toData()
-            data.text = editedText
-            activity?.let { ViewModelProviders.of(it) }?.get(NotesModel::class.java)?.update(data)
-        })
+        onCreateInternal(view)
 
         startingSet = ConstraintSet()
         startingSet?.clone(view)
@@ -135,15 +137,18 @@ class WritingFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
         view.post {
             applyStartingConstraints(endTask = Runnable {
                 titleEt.setText(note!!.title)
-                bulletPointEditor.setText(note!!.text!!)
+                onStartingConstraintsSet(view)
                 view.visibility = View.VISIBLE
-                bulletPointScrollView.invalidate()
                 applyFinalConstraints()
             })
         }
 
         return view
     }
+
+    abstract fun onCreateInternal(view: View)
+
+    abstract fun onStartingConstraintsSet(view: View)
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -176,17 +181,15 @@ class WritingFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
 
             if (note!!.title.isNotEmpty()) set.constrainHeight(titleFrame.id, WRAP_CONTENT)
 
-            startMarginAnimator(bulletPointScrollView, R.dimen.bullet_point_editor_end_margin_fullscreen, R.dimen.bullet_point_editor_end_margin_init, duration)
-
-            set.connect(bulletPointScrollView.id, START, fakeView.id, START)
-            set.connect(bulletPointScrollView.id, TOP, titleFrame.id, BOTTOM)
-            set.connect(bulletPointScrollView.id, BOTTOM, fakeView.id, BOTTOM)
+            applyStartingConstraintsInternal(set, duration)
 
             set.applyTo(getConstraintLayout())
         }
     }
 
-    private fun applyFinalConstraints(duration : Long = 150L, endTask : Runnable? = null) {
+    abstract fun applyStartingConstraintsInternal(set: ConstraintSet, duration: Long)
+
+    protected fun applyFinalConstraints(duration : Long = 150L, endTask : Runnable? = null) {
         val transition = ChangeBounds()
         transition.duration = duration
         val startTask = Runnable {
@@ -207,12 +210,14 @@ class WritingFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
 
         set.constrainHeight(titleFrame.id, WRAP_CONTENT)
 
-        startMarginAnimator(bulletPointScrollView, R.dimen.bullet_point_editor_end_margin_init, R.dimen.bullet_point_editor_end_margin_fullscreen, duration)
+        applyFinalConstraintsInternal(set, duration)
 
         set.applyTo(getConstraintLayout())
     }
 
-    private fun startMarginAnimator(v: View?, initialRes: Int, targetRes: Int, duration: Long) {
+    abstract fun applyFinalConstraintsInternal(set: ConstraintSet, duration: Long)
+
+    protected fun startMarginAnimator(v: View?, initialRes: Int, targetRes: Int, duration: Long) {
         v?.animate()?.cancel()
         val animator = ValueAnimator.ofInt(resources.getDimension(initialRes).toInt(), resources.getDimension(targetRes).toInt())
         animator.duration = duration
@@ -226,12 +231,16 @@ class WritingFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
         TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().setDuration(duration))
         val set = ConstraintSet()
         set.clone(getConstraintLayout())
-        set.connect(bulletsButton.id, BOTTOM, PARENT_ID, BOTTOM, resources.getDimension(R.dimen.secondary_fabs_height).toInt())
+
+        expandButtonsInternal(set)
+
         set.connect(paintButton.id, START, PARENT_ID, START)
         set.clear(paintButton.id, END)
         set.connect(paintButton.id, START, PARENT_ID, START, resources.getDimension(R.dimen.default_margin).toInt())
         set.applyTo(getConstraintLayout())
     }
+
+    abstract fun expandButtonsInternal(set: ConstraintSet)
 
     private fun collapseButtons(duration: Long = 100L) {
         hidePalette()
@@ -239,13 +248,17 @@ class WritingFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
         TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().setDuration(duration))
         val set = ConstraintSet()
         set.clone(getConstraintLayout())
-        set.connect(bulletsButton.id, BOTTOM, resources.getDimension(R.dimen.default_margin).toInt())
+
+        collapseButtonsInternal(set)
+
         set.clear(paintButton.id, START)
         set.connect(paintButton.id, END, PARENT_ID, START, resources.getDimension(R.dimen.default_margin).toInt())
         set.applyTo(getConstraintLayout())
     }
 
-    private fun hidePalette(view: View? = getView()) {
+    abstract fun collapseButtonsInternal(set: ConstraintSet)
+
+    protected fun hidePalette(view: View? = getView()) {
         showOrHidePalette(view, false)
     }
 
@@ -253,15 +266,8 @@ class WritingFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
         showOrHidePalette(view, true)
     }
 
-    private fun showOrHidePalette(view: View? = getView(), shouldShow: Boolean = false) {
+    open fun showOrHidePalette(view: View? = getView(), shouldShow: Boolean = false) {
         if (shouldShow == isPaletteShown) return
-
-        if (shouldShow) {
-            titleEt.clearFocus()
-            bulletPointEditor.clearFocus()
-            val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(view?.windowToken, 0)
-        }
 
         isPaletteShown = shouldShow
 
@@ -271,6 +277,8 @@ class WritingFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
 
         val set = ConstraintSet()
         set.clone(getConstraintLayout())
+
+        var maxRadius = 0
 
         palette
             .forEach {
@@ -295,17 +303,22 @@ class WritingFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
                                 (w * 1.5f * (rowCounter + 1))).toInt()
                     }
 
+                    maxRadius = max(maxRadius, radius)
+
                     set.constrainWidth(paletteItem.id, w)
                     set.constrainHeight(paletteItem.id, h)
                     set.constrainCircle(paletteItem.id, paintButton.id, radius, angle)
                 }
             }
 
+        set.constrainWidth(paletteMask.id, maxRadius)
+        set.constrainHeight(paletteMask.id, maxRadius)
+
         set.applyTo(getConstraintLayout())
     }
 
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-    private fun ConstraintSet.connect(id : Int, side : Int, margin : Int = 0, anchorId : Int = PARENT_ID) {
+    fun ConstraintSet.connect(id : Int, side : Int, margin : Int = 0, anchorId : Int = PARENT_ID) {
         connect(id, side, anchorId, side, margin)
     }
 
@@ -320,9 +333,6 @@ class WritingFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
 
     private fun openEditing(): Boolean {
         isEditing = true
-        if (!bulletPointEditor.hasFocus() && !titleFrame.titleEt.hasFocus())
-            bulletPointEditor.requestFocus()
-
         expandButtons()
         return false
     }
@@ -330,25 +340,18 @@ class WritingFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
     private fun closeEditing(saveEdits : Boolean = true) {
         isEditing = false
         titleEt.clearFocus()
-        bulletPointEditor.clearFocus()
         hidePalette()
         val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(view?.windowToken, 0)
 
-        val editedTitle = titleEt.text!!.toString().trimSpaces()
-        val editedText = bulletPointEditor.getText()
-        if (saveEdits && ((editedText != note?.text || editedTitle != note?.text)) &&
-            (editedTitle.isNotEmpty() || editedText.isNotEmpty())) {
-            val data = note!!.toData()
-            data.title = editedTitle
-            data.text = editedText
-            activity?.let { ViewModelProviders.of(it) }?.get(NotesModel::class.java)?.update(data)
-        }
+        closeEditingInternal(saveEdits)
 
         collapseButtons()
     }
 
-    fun applyColors(view: View? = getView()) {
+    abstract fun closeEditingInternal(saveEdits: Boolean)
+
+    open fun applyColors(view: View? = getView()) {
         if (view == null) return
 
         view.fakeView.background.setColorFilter(note!!.getColor(), PorterDuff.Mode.SRC_ATOP)
@@ -357,14 +360,12 @@ class WritingFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
         hintColor = Color.argb(120, hintColor.red, hintColor.green, hintColor.blue)
         view.titleEt.setTextColor(note!!.getTextColor())
         view.titleEt.setHintTextColor(hintColor)
-
-        view.bulletPointEditor.setTextColor(note!!.getTextColor())
     }
 
     private fun applyPalette(view: View) {
         val newColor = resources.getColor(
             view.tag as Int,
-            this@WritingFragment.context?.theme
+            this@EditFragment.context?.theme
         )
         if (note!!.getColor() != newColor) {
             note!!.setColor(newColor)
@@ -408,6 +409,131 @@ class WritingFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
         return true
     }
 
+
+    /**
+     * Editing text notes
+     */
+    class WritingFragment: EditFragment() {
+        override fun getLayout(): Int = R.layout.fragment_writing
+
+        override fun onCreateInternal(view: View) {
+            view.bulletsButton.setOnClickListener { bulletPointEditor.addBulletPoint(); hidePalette() }
+
+            view.bulletPointScrollView.setOnTouchListener { _, _ ->
+                hidePalette()
+                activity?.let {
+                    (it as MainActivity).pushStatus(STATUS_CONFIRM, ConfirmStrategy(it))
+                    bulletPointEditor.requestFocus()
+                }
+                false
+            }
+
+            view.bulletPointEditor.onFocusChangeListener = textFocusListener
+        }
+
+        override fun onStartingConstraintsSet(view: View) {
+            bulletPointEditor.setText(note!!.text!!)
+            bulletPointScrollView.invalidate()
+            view.bulletPointEditor.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { _, _ ->
+                hidePalette()
+                if (bulletPointEditor == null) return@OnCheckedChangeListener
+                val editedText = bulletPointEditor.getText()
+                val data = note!!.toData()
+                data.text = editedText
+                activity?.let { ViewModelProviders.of(it) }?.get(NotesModel::class.java)?.update(data)
+            })
+        }
+
+        override fun applyStartingConstraintsInternal(set: ConstraintSet, duration: Long) {
+            startMarginAnimator(bulletPointScrollView, R.dimen.bullet_point_editor_end_margin_fullscreen, R.dimen.bullet_point_editor_end_margin_init, duration)
+
+            set.connect(bulletPointScrollView.id, START, fakeView.id, START)
+            set.connect(bulletPointScrollView.id, TOP, titleFrame.id, BOTTOM)
+            set.connect(bulletPointScrollView.id, BOTTOM, fakeView.id, BOTTOM)
+        }
+
+        override fun applyFinalConstraintsInternal(set: ConstraintSet, duration: Long) {
+            startMarginAnimator(bulletPointScrollView, R.dimen.bullet_point_editor_end_margin_init, R.dimen.bullet_point_editor_end_margin_fullscreen, duration)
+        }
+
+
+        override fun expandButtonsInternal(set: ConstraintSet) {
+            set.connect(bulletsButton.id, BOTTOM, PARENT_ID, BOTTOM, resources.getDimension(R.dimen.secondary_fabs_height).toInt())
+        }
+
+        override fun collapseButtonsInternal(set: ConstraintSet) {
+            set.connect(bulletsButton.id, BOTTOM, resources.getDimension(R.dimen.default_margin).toInt())
+        }
+
+        override fun showOrHidePalette(view: View?, shouldShow: Boolean) {
+            if (shouldShow) {
+                titleEt.clearFocus()
+                bulletPointEditor.clearFocus()
+                val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(view?.windowToken, 0)
+            }
+
+            super.showOrHidePalette(view, shouldShow)
+        }
+
+        override fun closeEditingInternal(saveEdits: Boolean) {
+            bulletPointEditor.clearFocus()
+
+            val editedTitle = titleEt.text!!.toString().trimSpaces()
+            val editedText = bulletPointEditor.getText()
+            if (saveEdits && ((editedText != note?.text || editedTitle != note?.text)) &&
+                (editedTitle.isNotEmpty() || editedText.isNotEmpty())) {
+                val data = note!!.toData()
+                data.title = editedTitle
+                data.text = editedText
+                activity?.let { ViewModelProviders.of(it) }?.get(NotesModel::class.java)?.update(data)
+            }
+        }
+
+        override fun applyColors(view: View?) {
+            super.applyColors(view)
+            view?.bulletPointEditor?.setTextColor(note!!.getTextColor())
+        }
+    }
+
+
+    /**
+     * Editing audio notes
+     */
+    class AudioFragment: EditFragment() {
+        override fun getLayout(): Int = R.layout.fragment_audio
+
+        override fun onCreateInternal(view: View) { }
+        override fun onStartingConstraintsSet(view: View) { }
+
+        override fun applyStartingConstraintsInternal(set: ConstraintSet, duration: Long) {
+            set.constrainWidth(playButton.id, resources.getDimension(R.dimen.play_button_size).toInt())
+            set.constrainHeight(playButton.id, resources.getDimension(R.dimen.play_button_size).toInt())
+        }
+
+        override fun applyFinalConstraintsInternal(set: ConstraintSet, duration: Long) {
+            set.constrainWidth(playButton.id, resources.getDimension(R.dimen.big_play_button_size).toInt())
+            set.constrainHeight(playButton.id, resources.getDimension(R.dimen.big_play_button_size).toInt())
+        }
+
+        override fun expandButtonsInternal(set: ConstraintSet) { }
+        override fun collapseButtonsInternal(set: ConstraintSet) { }
+
+        override fun closeEditingInternal(saveEdits: Boolean) {
+            val editedTitle = titleEt.text!!.toString().trimSpaces()
+            if (saveEdits && editedTitle != note?.text && editedTitle.isNotEmpty()) {
+                val data = note!!.toData()
+                data.title = editedTitle
+                activity?.let { ViewModelProviders.of(it) }?.get(NotesModel::class.java)?.update(data)
+            }
+        }
+
+        override fun applyColors(view: View?) {
+            super.applyColors(view)
+            view?.playButton?.setColorFilter(note!!.getTextColor(), PorterDuff.Mode.SRC_ATOP)
+        }
+    }
+
     companion object {
         /**
          * Use this factory method to create a new instance of
@@ -415,9 +541,9 @@ class WritingFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
          */
         @JvmStatic
         fun newInstance(note: Note, v : View) =
-            WritingFragment().apply {
+            (if (note.isRecording) AudioFragment() else WritingFragment()).apply {
                 this.retainInstance = true
-                this.note = note
+                this.note = Note(note.toData())
                 arguments = Bundle().apply {
                     putFloat(ARG_X, v.x)
                     putFloat(ARG_Y, v.y)
@@ -438,14 +564,17 @@ class WritingFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
         }
 
         override fun onPrimaryClick() {
-            hidePalette()
-            openEditing()
             context.pushStatus(STATUS_CONFIRM, ConfirmStrategy(context))
         }
     }
 
     inner class ConfirmStrategy(context: MainActivity): MainActivity.OnClickStrategy(context) {
         override fun getPrimaryDrawable() = resources.getDrawable(R.drawable.done, context.theme)
+
+        override fun initialize() {
+            super.initialize()
+            openEditing()
+        }
 
         override fun onBackPressed(): Boolean {
             when {
@@ -483,5 +612,5 @@ class WritingFragment : Fragment(), View.OnClickListener, View.OnTouchListener {
         }
     }
 
-    private fun String.trimSpaces() = trimStart { c -> c.isWhitespace() }.dropLastWhile { c -> c.isWhitespace() }
+    fun String.trimSpaces() = trimStart { c -> c.isWhitespace() }.dropLastWhile { c -> c.isWhitespace() }
 }

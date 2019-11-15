@@ -41,29 +41,17 @@
             android:textSize="@dimen/note_title_sp"/>
     </FrameLayout>
 
-    <ScrollView
-        android:id="@+id/bulletPointScrollView"
-        android:orientation="vertical"
+    <ImageButton
+        android:id="@+id/playButton"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginStart="@dimen/bullet_point_editor_margin"
-
-        android:paddingBottom="@dimen/bullet_point_editor_margin"
-        android:clipToPadding="false"
-        android:focusable="false"
-        app:layout_constraintStart_toStartOf="@+id/fakeView"
+        android:background="@null"
+        android:src="@drawable/play_pause"
+        android:scaleType="fitCenter"
         app:layout_constraintEnd_toEndOf="@+id/fakeView"
-        app:layout_constraintTop_toBottomOf="@+id/titleFrame"
-        app:layout_constraintBottom_toBottomOf="@+id/fakeView">
-
-        <com.stgi.kotebook.BulletPointTextEditor
-            android:orientation="vertical"
-            android:id="@+id/bulletPointEditor"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:focusable="false" />
-    </ScrollView>
+        app:layout_constraintStart_toStartOf="@+id/fakeView"
+        app:layout_constraintTop_toTopOf="@+id/fakeView"
+        app:layout_constraintBottom_toBottomOf="@+id/fakeView"/>
 
     <View
         android:id="@+id/paletteMask"
@@ -86,19 +74,6 @@
         app:layout_constraintEnd_toStartOf="parent"/>
 
     <ImageButton
-        android:id="@+id/bulletsButton"
-        android:layout_width="@dimen/fab_size"
-        android:layout_height="@dimen/fab_size"
-        android:layout_margin="@dimen/fab_margin"
-        android:background="@drawable/circle"
-        android:contentDescription="@null"
-        android:src="@drawable/bullets"
-        android:elevation="2dp"
-        android:foreground="@drawable/circular_ripple"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <ImageButton
         android:id="@+id/fakeButton"
         android:layout_width="@dimen/fab_size"
         android:layout_height="@dimen/fab_size"
@@ -110,4 +85,4 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -26,6 +26,7 @@ class RecordingFloatingActionButton(context: Context, attributeSet: AttributeSet
     RelativeLayout(context, attributeSet), View.OnTouchListener {
 
     private val fab: View = LayoutInflater.from(context).inflate(R.layout.fab_audio, this, false)
+    private val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
     var timer: CountDownTimer? = null
 
@@ -97,34 +98,40 @@ class RecordingFloatingActionButton(context: Context, attributeSet: AttributeSet
                     fab.x = min(max(leftBound, fab.x + (ev.x - startX)), getSwipeThreshold())
                     val alpha = min(fab.x.toInt() * 255 / getSwipeThreshold().toInt(), 255)
                     fab.circlet?.background?.setColorFilter(
-                        Color.argb(alpha, 255, 0, 0), PorterDuff.Mode.DARKEN
+                        Color.argb(alpha, 0xb0, 0, 0x20), PorterDuff.Mode.DARKEN
                     )
-                    if (fab.x >= getSwipeThreshold(false) && !vibrationFlag) {
-                        val vibrator =
-                            context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
-                        vibrator?.vibrate(
+
+                    val oldFlag = vibrationFlag
+
+                    if (fab.x >= getSwipeThreshold(false)) {
+                        vibrationFlag = true
+                        stopTimer()
+                        fab.swipeView.alpha = 0f
+                    } else if (fab.x < getSwipeThreshold(false)) {
+                        vibrationFlag = false
+                        startTimer()
+                    }
+
+                    if (vibrationFlag != oldFlag) {
+                        vibrator.vibrate(
                             VibrationEffect.createOneShot(
                                 100L,
                                 VibrationEffect.DEFAULT_AMPLITUDE
                             )
                         )
-
-                        stopTimer()
-                        fab.swipeView.alpha = 0f
-                    } else if (fab.x < getSwipeThreshold(false))
-                        startTimer()
-
-                    vibrationFlag = fab.x >= getSwipeThreshold(false)
+                    }
                     return true
                 }
                 MotionEvent.ACTION_UP -> {
                     if (fab.x >= getSwipeThreshold(false))
                         callback?.onItemSwiped(0, 0)
+                    else fab.circlet?.background?.clearColorFilter()
+
                     fab.animate()
                         .translationX(0f)
                         .setDuration(100L)
+
                     startX = 0f
-                    fab.circlet?.background?.clearColorFilter()
                     return true
                 }
             }
@@ -147,6 +154,7 @@ class RecordingFloatingActionButton(context: Context, attributeSet: AttributeSet
             stopTimer()
             fab.visualizer.visibility = View.VISIBLE
         } else {
+            fab.circlet?.background?.clearColorFilter()
             fab.fab.visibility = View.VISIBLE
             fab.swipeView.visibility = View.VISIBLE
             startTimer()
@@ -165,67 +173,3 @@ class RecordingFloatingActionButton(context: Context, attributeSet: AttributeSet
         callback = adapter
     }
 }
-    /*RecyclerView(context, attributeSet) {
-
-    init {
-        layoutManager = LinearLayoutManager(context, VERTICAL, false)
-        adapter = AudioAdapter()
-    }
-
-    private var isRecording: Boolean = false
-
-    fun setIsRecording(isRecording: Boolean) {
-        this.isRecording = isRecording
-        if (isRecording) {
-            getChildAt(0).fab.visibility = View.GONE
-            getChildAt(0).visualizer.visibility = View.VISIBLE
-        } else {
-            getChildAt(0).fab.visibility = View.VISIBLE
-            getChildAt(0).visualizer.visibility = View.GONE
-            getChildAt(0).visualizer.reset()
-        }
-    }
-
-    fun setSwipeAdapter(adapter: ItemTouchHelperAdapter) {
-        val helper = ItemTouchHelper(AudioCallback(AdapterDecorator(adapter), dragEnabled = false, swipeEnabled = true))
-        helper.attachToRecyclerView(this)
-    }
-
-    fun updateAmplitude(amplitude: Int?) {
-        if (isRecording && amplitude != null) {
-            getChildAt(0).visualizer.updateAmplitude(amplitude)
-        }
-    }
-
-    inner class AudioAdapter: Adapter<AudioViewHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AudioViewHolder {
-            val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.fab_audio, parent, false)
-            return AudioViewHolder(view)
-        }
-
-        override fun getItemCount() = 1
-
-        override fun onBindViewHolder(holder: AudioViewHolder, position: Int) {
-
-        }
-    }
-
-    inner class AudioViewHolder(itemView: View): ViewHolder(itemView)
-
-    inner class AdapterDecorator(private val ithAdapter: ItemTouchHelperAdapter): ItemTouchHelperAdapter {
-        override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
-            return ithAdapter.onItemMove(fromPosition, toPosition)
-        }
-
-        override fun onItemMoveEnded(fromPosition: Int, toPosition: Int) {
-            ithAdapter.onItemMoveEnded(fromPosition, toPosition)
-        }
-
-        override fun onItemSwiped(position: Int, direction: Int) {
-            ithAdapter.onItemSwiped(position, direction)
-        }
-
-        override fun isItemViewSwipeEnabled(): Boolean = !isRecording
-    }
-}*/

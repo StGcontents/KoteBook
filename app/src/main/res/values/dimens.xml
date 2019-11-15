@@ -35,4 +35,6 @@
     <dimen name="palette_radius">16dp</dimen>
     <dimen name="small_fab_elevation">1dp</dimen>
     <dimen name="visualizer_item_size">2dp</dimen>
+    <dimen name="play_button_size">64dp</dimen>
+    <dimen name="big_play_button_size">128dp</dimen>
 </resources>

@@ -213,10 +213,12 @@ class BulletPointTextEditor(context: Context, attrs: AttributeSet) : LinearLayou
     private fun Editable.trimSpaces() = toString().trimSpaces()
 
     private fun removeAllBulletPoints() {
-        var child: View? = getChildAt(childCount - 1)
-        while (child != null && child is BulletPointView) {
-            removeView(child)
-            child = getChildAt(childCount - 1)
+        var i = 0
+        while (i < childCount) {
+            val child = getChildAt(i)
+            if (child is BulletPointView)
+                removeBulletPoint(child, false)
+            else i++
         }
     }
 

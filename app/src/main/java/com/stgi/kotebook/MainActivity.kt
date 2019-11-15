@@ -44,6 +44,8 @@ import kotlinx.android.synthetic.main.note_card.view.removeButton
 import kotlinx.android.synthetic.main.note_card.view.noteTv
 import kotlinx.android.synthetic.main.note_card_audio.view.*
 import kotlinx.android.synthetic.main.note_card_bulleted.view.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.File
 import java.lang.StringBuilder
 import java.util.*
@@ -105,6 +107,8 @@ val palette = intArrayOf(
     R.color.noteColor7
     )
 
+const val DIRECTORY = "/KoteBook/"
+
 class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTouchHelperAdapter {
 
     private val adapter : NotesAdapter = NotesAdapter()
@@ -128,20 +132,32 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
     private var isRecording: Boolean = false
     var timer: CountDownTimer? = null
 
+
+    val directory = File(Environment.getExternalStorageDirectory().absolutePath + DIRECTORY).also {
+        if (!it.exists())
+            it.mkdirs()
+    }
+
+    fun filterNotes() = GlobalScope.launch {
+        val iterator = model.getAll().iterator()
+        while (iterator.hasNext()) {
+            val data = iterator.next()
+            if (data.isRecording && !File(getFilepath(data.text)).exists())
+                model.remove(data)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        model.notes.observe(this,
-            Observer<List<Note.NoteData>> { t -> adapter.setData(t?.map { Note(it) }?.sortedWith(compareBy({ !it.pinned }, { it.id }))) })
+        filterNotes()
 
         rootLayout.setOnTouchListener(dismissInputListener)
         writingFrame.setOnTouchListener { _, _ -> false }
         bgView.setOnTouchListener { _, _ -> true }
 
         pushStatus(STATUS_INIT)
-
-        //bulletPointBtn.setOnClickListener { if (bulletPointBtn.visibility == View.VISIBLE) inputText.addBulletPoint() }
 
         inputText.setTextColor(Color.WHITE)
 
@@ -176,6 +192,20 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
         })
 
         audioFab.setSwipeAdapter(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        model.notes.observe(this,
+            Observer<List<Note.NoteData>> { t ->
+                adapter.setData(t?.map { Note(it) }
+                    ?.sortedWith(compareBy({ !it.pinned }, { it.id })))
+            })
+    }
+
+    override fun onPause() {
+        super.onPause()
+        model.notes.removeObservers(this)
     }
 
     private fun getSpans() = if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) 2 else 3
@@ -230,13 +260,17 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
     }
 
     private fun hideAllOptionsBesides(v: View?) {
-        notesRecycler.children.filter { it != v }.forEach { (notesRecycler.getChildViewHolder(it) as NotesViewHolder).hideOptions() }
+        notesRecycler.children.filter { it != v }.forEach {
+            val holder = notesRecycler.getChildViewHolder(it) as NotesViewHolder
+            holder.hideOptions()
+            if (holder is AudioViewHolder) holder.stop()
+        }
     }
 
     fun showWritingFragment(note : Note, view : View) {
         supportFragmentManager.beginTransaction()
             .addToBackStack(null)
-            .replace(R.id.writingFrame, WritingFragment.newInstance(note, view))
+            .replace(R.id.writingFrame, EditFragment.newInstance(note, view))
             .commit()
         constraintLayout.show()
         audioFab.hide()
@@ -304,7 +338,7 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
             timer = object : CountDownTimer(10000L, 50L) {
                 override fun onFinish() {
                     if (currentStrategy is RecStrategy)
-                        currentStrategy?.onClick(null)
+                        currentStrategy?.onPrimaryClick()
                 }
 
                 override fun onTick(tick: Long) {
@@ -327,17 +361,17 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
         }
     }
 
-    fun persistRecording() {
+    fun persistRecording() = GlobalScope.launch {
         if (tmpFile != null) {
             var fileName = audioEt.text.toString().trimSpaces()
             if (fileName.isEmpty()) fileName = tmpFile!!.nameWithoutExtension
             fileName = fileName.plus(".").plus(tmpFile?.extension)
-            val newFile = File(Environment.getExternalStorageDirectory().absolutePath + "/" + fileName)
+            val newFile = File(getFilepath(fileName))
             tmpFile?.copyTo(newFile, overwrite = true)
             tmpFile?.delete()
 
             val data = Note.NoteData(title = newFile.nameWithoutExtension,
-                text = newFile.absolutePath, pinned = false,
+                text = newFile.name, pinned = false,
                 color = RandomColor().gen(), isRecording = true)
             model.add(data)
         }
@@ -579,7 +613,14 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
 
         private fun removeNote(position : Int) {
             if (position < 0 || position > items.size) return
-            model.remove(items[position].toData())
+            val data = items[position].toData()
+            model.remove(data)
+            if (data.isRecording) {
+                File(data.text).also {
+                    if (it.exists())
+                        it.delete()
+                }
+            }
         }
 
         private fun pinNote(position: Int, pinned: Boolean) {
@@ -648,8 +689,7 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
             }
 
             override fun onDoubleTap(e: MotionEvent?): Boolean {
-                if (this@NotesViewHolder is TextViewHolder)
-                    (itemView.context as MainActivity).showWritingFragment(note!!, itemView)
+                (itemView.context as MainActivity).showWritingFragment(note!!, itemView)
                 return super.onDoubleTap(e)
             }
 
@@ -662,18 +702,22 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
         private val detector = GestureDetector(itemView.context, gestures)
 
         constructor(itemView: View, cl : View.OnClickListener) : this(itemView) {
-            itemView.setOnTouchListener(this)
-            val wrapperListener = object : AbstractListenerDecorator(cl) {
-                override fun decorate() {
-                    scheduleHideOptions()
-                }
+            this.apply {
+                itemView.setOnTouchListener(this)
+                val wrapperListener = getWrapper(cl)
+                rmvButton.setOnClickListener(wrapperListener)
+                pinButton.setOnClickListener(wrapperListener)
             }
-            rmvButton.setOnClickListener(wrapperListener)
-            pinButton.setOnClickListener(wrapperListener)
+        }
+
+        open fun getWrapper(cl: View.OnClickListener) = object : AbstractListenerDecorator(cl) {
+            override fun decorate() {
+                scheduleHideOptions()
+            }
         }
 
         @SuppressLint("ClickableViewAccessibility")
-        override fun onTouch(v: View?, ev: MotionEvent?): Boolean {
+        final override fun onTouch(v: View?, ev: MotionEvent?): Boolean {
             if (v is ImageButton) {
                 return false
             }
@@ -738,7 +782,7 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
             options.removeCallbacks(hideRunnable)
         }
 
-        private fun scheduleHideOptions() {
+        protected fun scheduleHideOptions() {
             cancelHideOptions()
             options.postDelayed(hideRunnable, 5000L)
         }
@@ -770,22 +814,63 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
         private val titleTv : TextView = itemView.audioTitleTv
         private val playButton : ImageButton = itemView.playButton
 
+        private var mediaPlayer: MediaPlayer? = null
+
+        override fun getWrapper(cl: View.OnClickListener) = object : AbstractListenerDecorator(cl) {
+            override fun decorate() {
+                scheduleHideOptions()
+                stop()
+            }
+        }
+
         override fun bind(note: Note) {
             super.bind(note)
 
-            titleTv.setText(note.title)
+            titleTv.text = note.title
             titleTv.setTextColor(note.getTextColor())
 
             playButton.setColorFilter(note.getTextColor(), PorterDuff.Mode.SRC_ATOP)
             playButton.setOnClickListener {
-                val mediaPlayer: MediaPlayer? = MediaPlayer().apply {
-                    setAudioStreamType(AudioManager.STREAM_MUSIC)
-                    setDataSource(applicationContext, Uri.fromFile(File(note.text)))
-                    prepare()
-                    start()
-                }
-
+                if (it.isSelected) pause()
+                else start()
             }
+        }
+
+        private fun start() {
+            if (mediaPlayer == null) {
+                val file = File(getFilepath(note?.text))
+                if (file.exists()) {
+                    playButton.isSelected = true
+                    mediaPlayer = MediaPlayer().apply {
+                        setAudioStreamType(AudioManager.STREAM_MUSIC)
+                        setDataSource(applicationContext, Uri.fromFile(file))
+                        setOnCompletionListener { this@AudioViewHolder.stop() }
+                        prepare()
+                        start()
+                    }
+                } else {
+                    playButton.isSelected = false
+                    Toast.makeText(itemView.context, "Unable to reproduce audio", Toast.LENGTH_LONG)
+                        .show()
+                    stop()
+                }
+            } else {
+                playButton.isSelected = true
+                mediaPlayer?.start()
+            }
+        }
+
+        private fun pause() {
+            playButton.isSelected = false
+            mediaPlayer?.pause()
+        }
+
+        fun stop() {
+            playButton.isSelected = false
+
+            mediaPlayer?.stop()
+            mediaPlayer?.release()
+            mediaPlayer = null
         }
     }
 
@@ -887,6 +972,7 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
 
 
 
+    fun getFilepath(name: String?) = directory.absolutePath + "/" + name
 
     fun String.trimSpaces() = trimStart { c -> c.isWhitespace() }.dropLastWhile { c -> c.isWhitespace() }
 

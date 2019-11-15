@@ -35,7 +35,7 @@
             android:layout_below="@id/audioTitleTv"
             android:layout_centerHorizontal="true"
             android:background="@null"
-            android:src="@drawable/play"
+            android:src="@drawable/play_pause"
             android:scaleType="fitCenter"
             android:layout_marginTop="@dimen/card_text_top_margin"
             android:layout_marginBottom="@dimen/card_text_margin"

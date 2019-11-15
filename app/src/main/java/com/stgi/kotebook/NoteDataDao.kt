@@ -8,6 +8,9 @@ interface NoteDataDao {
     @Query("SELECT * FROM notedata ORDER BY pinned DESC, uid")
     fun getAll(): LiveData<List<Note.NoteData>>
 
+    @Query("SELECT * FROM notedata ORDER BY pinned DESC, uid")
+    fun getAllBlocking(): List<Note.NoteData>
+
     @Query("SELECT * FROM notedata WHERE uid IN (:noteIds) ORDER BY pinned DESC, uid")
     fun loadAllByIds(noteIds: IntArray): LiveData<List<Note.NoteData>>
 

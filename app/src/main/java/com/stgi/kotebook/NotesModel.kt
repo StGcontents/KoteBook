@@ -18,6 +18,8 @@ class NotesModel(application: Application) : AndroidViewModel(application) {
         db.notesDao().getAll()
     }
 
+    fun getAll(): List<Note.NoteData> = db.notesDao().getAllBlocking()
+
     fun update(note: Note.NoteData) {
         Thread(Runnable { db.notesDao().updateNotes(note) }).start()
     }
