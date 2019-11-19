@@ -28,18 +28,57 @@
             android:gravity="start|top"
             android:ellipsize="end" />
 
+        <com.stgi.kotebook.CassettePlayerView
+            android:id="@+id/playerView"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_below="@id/audioTitleTv"
+            android:layout_centerHorizontal="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <!--include layout="@layout/cassette_player"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_below="@id/audioTitleTv"
+            android:layout_centerHorizontal="true"
+            /-->
+
+        <!--ImageView
+            android:id="@+id/cassetteLeft"
+            android:src="@drawable/cassette"
+            android:scaleType="fitCenter"
+            android:layout_marginStart="8dp"
+            android:layout_alignTop="@+id/playButton"
+            android:layout_toStartOf="@+id/playButton"
+            android:layout_width="64dp"
+            android:layout_height="64dp" />
+
         <ImageButton
             android:id="@+id/playButton"
             android:layout_width="64dp"
             android:layout_height="64dp"
+            android:background="@null"
             android:layout_below="@id/audioTitleTv"
             android:layout_centerHorizontal="true"
-            android:background="@null"
             android:src="@drawable/play_pause"
             android:scaleType="fitCenter"
             android:layout_marginTop="@dimen/card_text_top_margin"
             android:layout_marginBottom="@dimen/card_text_margin"
             android:textSize="@dimen/note_text_sp" />
+
+        <ImageView
+            android:id="@+id/cassetteRight"
+            android:src="@drawable/cassette"
+            android:scaleType="fitCenter"
+            android:layout_alignTop="@+id/playButton"
+            android:layout_toEndOf="@+id/playButton"
+            android:layout_marginEnd="8dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp" /-->
     </RelativeLayout>
 
     <LinearLayout

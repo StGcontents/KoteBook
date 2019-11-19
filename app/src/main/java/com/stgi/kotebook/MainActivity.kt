@@ -10,12 +10,12 @@ import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.TransitionDrawable
-import android.media.AudioManager
-import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.net.Uri
-import android.os.*
-import android.text.*
+import android.os.Bundle
+import android.os.CountDownTimer
+import android.os.Environment
+import android.text.TextUtils
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
@@ -38,16 +38,15 @@ import androidx.transition.TransitionManager
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.layout_retracted.*
 import kotlinx.android.synthetic.main.note_card.view.noteTitleTv
+import kotlinx.android.synthetic.main.note_card.view.noteTv
 import kotlinx.android.synthetic.main.note_card.view.options
 import kotlinx.android.synthetic.main.note_card.view.pinButton
 import kotlinx.android.synthetic.main.note_card.view.removeButton
-import kotlinx.android.synthetic.main.note_card.view.noteTv
 import kotlinx.android.synthetic.main.note_card_audio.view.*
 import kotlinx.android.synthetic.main.note_card_bulleted.view.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
-import java.lang.StringBuilder
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.random.Random
@@ -118,7 +117,7 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
     private var isRetracted : Boolean = true
 
     val dismissInputListener = View.OnTouchListener { _, _ ->
-        if (!isAnimating && currentStrategy!!.isDismissable())
+        if (!isAnimating && currentStrategy!!.isDismissible())
             currentStrategy?.onBackPressed()
         return@OnTouchListener false
     }
@@ -263,11 +262,11 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
         notesRecycler.children.filter { it != v }.forEach {
             val holder = notesRecycler.getChildViewHolder(it) as NotesViewHolder
             holder.hideOptions()
-            if (holder is AudioViewHolder) holder.stop()
+            if (holder is AudioViewHolder) holder.playerView.stop()
         }
     }
 
-    fun showWritingFragment(note : Note, view : View) {
+    fun showEditFragment(note : Note, view : View) {
         supportFragmentManager.beginTransaction()
             .addToBackStack(null)
             .replace(R.id.writingFrame, EditFragment.newInstance(note, view))
@@ -408,7 +407,7 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
             context.secondaryButton.setOnClickListener(this)
         }
 
-        open fun isDismissable() = true
+        open fun isDismissible() = true
 
         open fun onBackPressed(): Boolean {
             context.pushStatus(STATUS_INIT)
@@ -433,7 +432,7 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
             retract()
             audioFab.show()
         }
-        override fun isDismissable() = false
+        override fun isDismissible() = false
         override fun onBackPressed(): Boolean = true
         override fun onPrimaryClick() {
             if (!isAnimating) {
@@ -470,7 +469,7 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
 
     inner class RecStrategy(context: MainActivity): OnClickStrategy(context) {
         override fun getPrimaryDrawable() = resources.getDrawable(R.drawable.stop, theme)
-        override fun isDismissable() = false
+        override fun isDismissible() = false
         override fun onBackPressed(): Boolean {
             timer?.cancel()
             tmpFile?.delete()
@@ -689,7 +688,8 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
             }
 
             override fun onDoubleTap(e: MotionEvent?): Boolean {
-                (itemView.context as MainActivity).showWritingFragment(note!!, itemView)
+                if (this@NotesViewHolder is AudioViewHolder) this@NotesViewHolder.playerView.stop()
+                (itemView.context as MainActivity).showEditFragment(note!!, itemView)
                 return super.onDoubleTap(e)
             }
 
@@ -721,7 +721,7 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
             if (v is ImageButton) {
                 return false
             }
-            if (v is CheckBox && v.isClickable) {
+            if (v is ImageView || (v is CheckBox && v.isClickable)) {
                 return true
             }
             detector.onTouchEvent(ev)
@@ -812,14 +812,16 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
 
     inner class AudioViewHolder(itemView : View, cl : View.OnClickListener) : NotesViewHolder(itemView, cl) {
         private val titleTv : TextView = itemView.audioTitleTv
-        private val playButton : ImageButton = itemView.playButton
+        internal val playerView: CassettePlayerView = itemView.playerView
 
-        private var mediaPlayer: MediaPlayer? = null
+        init {
+            playerView.parent.requestDisallowInterceptTouchEvent(true)
+        }
 
         override fun getWrapper(cl: View.OnClickListener) = object : AbstractListenerDecorator(cl) {
             override fun decorate() {
                 scheduleHideOptions()
-                stop()
+                //playerView.stop()
             }
         }
 
@@ -829,48 +831,12 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
             titleTv.text = note.title
             titleTv.setTextColor(note.getTextColor())
 
-            playButton.setColorFilter(note.getTextColor(), PorterDuff.Mode.SRC_ATOP)
-            playButton.setOnClickListener {
-                if (it.isSelected) pause()
-                else start()
+            val file = File(getFilepath(note.text))
+            if (file.exists()) {
+                playerView.setContentUri(Uri.fromFile(file))
             }
-        }
 
-        private fun start() {
-            if (mediaPlayer == null) {
-                val file = File(getFilepath(note?.text))
-                if (file.exists()) {
-                    playButton.isSelected = true
-                    mediaPlayer = MediaPlayer().apply {
-                        setAudioStreamType(AudioManager.STREAM_MUSIC)
-                        setDataSource(applicationContext, Uri.fromFile(file))
-                        setOnCompletionListener { this@AudioViewHolder.stop() }
-                        prepare()
-                        start()
-                    }
-                } else {
-                    playButton.isSelected = false
-                    Toast.makeText(itemView.context, "Unable to reproduce audio", Toast.LENGTH_LONG)
-                        .show()
-                    stop()
-                }
-            } else {
-                playButton.isSelected = true
-                mediaPlayer?.start()
-            }
-        }
-
-        private fun pause() {
-            playButton.isSelected = false
-            mediaPlayer?.pause()
-        }
-
-        fun stop() {
-            playButton.isSelected = false
-
-            mediaPlayer?.stop()
-            mediaPlayer?.release()
-            mediaPlayer = null
+            playerView.setColorFilter(note.getTextColor())
         }
     }
 

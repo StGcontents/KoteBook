@@ -37,4 +37,7 @@
     <dimen name="visualizer_item_size">2dp</dimen>
     <dimen name="play_button_size">64dp</dimen>
     <dimen name="big_play_button_size">128dp</dimen>
+    <dimen name="bigger_play_button_size">256dp</dimen>
+    <dimen name="cassette_player_margin">8dp</dimen>
+    <dimen name="cassette_progress_height">4dp</dimen>
 </resources>

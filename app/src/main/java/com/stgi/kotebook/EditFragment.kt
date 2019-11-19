@@ -23,10 +23,11 @@ import kotlinx.android.synthetic.main.fragment_writing.*
 import kotlinx.android.synthetic.main.fragment_writing.view.*
 import android.animation.ValueAnimator
 import android.content.Context
+import android.net.Uri
 import android.view.*
 import androidx.core.view.forEach
 import kotlinx.android.synthetic.main.fragment_audio.*
-import kotlinx.android.synthetic.main.fragment_audio.view.*
+import kotlinx.android.synthetic.main.fragment_audio.view.playerView
 import kotlinx.android.synthetic.main.fragment_writing.fakeView
 import kotlinx.android.synthetic.main.fragment_writing.paintButton
 import kotlinx.android.synthetic.main.fragment_writing.paletteMask
@@ -36,6 +37,7 @@ import kotlinx.android.synthetic.main.fragment_writing.view.fakeView
 import kotlinx.android.synthetic.main.fragment_writing.view.paintButton
 import kotlinx.android.synthetic.main.fragment_writing.view.paletteMask
 import kotlinx.android.synthetic.main.fragment_writing.view.titleEt
+import java.io.File
 import kotlin.math.max
 
 
@@ -46,6 +48,7 @@ private const val ARG_X = "X"
 private const val ARG_Y = "Y"
 private const val ARG_W = "W"
 private const val ARG_H = "H"
+private const val ARG_PLAYER_H = "PLAYER_H"
 
 private const val ANGLE = 90.0f
 private const val BASE_ROW = 4
@@ -139,7 +142,7 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
                 titleEt.setText(note!!.title)
                 onStartingConstraintsSet(view)
                 view.visibility = View.VISIBLE
-                applyFinalConstraints()
+                applyFinalConstraints(endTask = Runnable { onFinalConstraintsSet(view) })
             })
         }
 
@@ -149,6 +152,7 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
     abstract fun onCreateInternal(view: View)
 
     abstract fun onStartingConstraintsSet(view: View)
+    abstract fun onFinalConstraintsSet(view: View)
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -334,8 +338,11 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
     private fun openEditing(): Boolean {
         isEditing = true
         expandButtons()
+        openEditingInternal()
         return false
     }
+
+    abstract fun openEditingInternal()
 
     private fun closeEditing(saveEdits : Boolean = true) {
         isEditing = false
@@ -444,6 +451,8 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
             })
         }
 
+        override fun onFinalConstraintsSet(view: View) { }
+
         override fun applyStartingConstraintsInternal(set: ConstraintSet, duration: Long) {
             startMarginAnimator(bulletPointScrollView, R.dimen.bullet_point_editor_end_margin_fullscreen, R.dimen.bullet_point_editor_end_margin_init, duration)
 
@@ -476,6 +485,8 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
             super.showOrHidePalette(view, shouldShow)
         }
 
+        override fun openEditingInternal() { }
+
         override fun closeEditingInternal(saveEdits: Boolean) {
             bulletPointEditor.clearFocus()
 
@@ -503,21 +514,36 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
     class AudioFragment: EditFragment() {
         override fun getLayout(): Int = R.layout.fragment_audio
 
-        override fun onCreateInternal(view: View) { }
+        override fun onCreateInternal(view: View) {
+            view.playerView.setColorFilter(note!!.getTextColor())
+        }
         override fun onStartingConstraintsSet(view: View) { }
 
+        override fun onFinalConstraintsSet(view: View) {
+            val file = File(getFilepath(note!!.text))
+            if (file.exists()) {
+                view.playerView.setContentUri(Uri.fromFile(file))
+            }
+        }
+
         override fun applyStartingConstraintsInternal(set: ConstraintSet, duration: Long) {
-            set.constrainWidth(playButton.id, resources.getDimension(R.dimen.play_button_size).toInt())
-            set.constrainHeight(playButton.id, resources.getDimension(R.dimen.play_button_size).toInt())
+            set.constrainHeight(playerView.id,
+                arguments!!.getInt(ARG_PLAYER_H, resources.getDimension(R.dimen.play_button_size).toInt()))
+            set.clear(playerView.id, TOP)
         }
 
         override fun applyFinalConstraintsInternal(set: ConstraintSet, duration: Long) {
-            set.constrainWidth(playButton.id, resources.getDimension(R.dimen.big_play_button_size).toInt())
-            set.constrainHeight(playButton.id, resources.getDimension(R.dimen.big_play_button_size).toInt())
+            set.constrainHeight(playerView.id, resources.getDimension(R.dimen.bigger_play_button_size).toInt())
+            set.connect(playerView.id, TOP, fakeView.id, TOP)
         }
 
         override fun expandButtonsInternal(set: ConstraintSet) { }
         override fun collapseButtonsInternal(set: ConstraintSet) { }
+
+        override fun openEditingInternal() {
+            playerView.stop()
+            playerView.isEnabled = false
+        }
 
         override fun closeEditingInternal(saveEdits: Boolean) {
             val editedTitle = titleEt.text!!.toString().trimSpaces()
@@ -526,12 +552,15 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
                 data.title = editedTitle
                 activity?.let { ViewModelProviders.of(it) }?.get(NotesModel::class.java)?.update(data)
             }
+            playerView.isEnabled = true
         }
 
         override fun applyColors(view: View?) {
             super.applyColors(view)
-            view?.playButton?.setColorFilter(note!!.getTextColor(), PorterDuff.Mode.SRC_ATOP)
+            playerView?.setColorFilter(note!!.getTextColor())
         }
+
+        fun getFilepath(name: String?) = (activity as MainActivity).directory.absolutePath + "/" + name
     }
 
     companion object {
@@ -550,14 +579,19 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
                     putInt(ARG_W, v.width)
                     putInt(ARG_H, v.height)
                 }
+                if (this is AudioFragment) {
+                    arguments?.putInt(ARG_PLAYER_H, v.playerView.height)
+                }
             }
     }
 
     inner class EditStrategy(context: MainActivity): MainActivity.OnClickStrategy(context) {
         override fun getPrimaryDrawable() = resources.getDrawable(R.drawable.edit, context.theme)
-        override fun isDismissable() = false
+        override fun isDismissible() = false
 
         override fun onBackPressed(): Boolean {
+            if (this@EditFragment is AudioFragment)
+                this@EditFragment.playerView.stop()
             exit()
             context.pushStatus(STATUS_INIT)
             return false
