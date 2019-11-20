@@ -21,6 +21,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
@@ -60,6 +61,7 @@ private const val STATUS_RECORDING = 3
 private const val STATUS_SAVE_REC = 4
 const val STATUS_EDIT = 5
 const val STATUS_CONFIRM = 6
+const val STATUS_ALARM = 7
 
 private const val NOTE_TYPE_AUDIO = R.layout.note_card_audio
 private const val NOTE_TYPE_BASE = R.layout.note_card
@@ -554,6 +556,11 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
                 audioEt.setText(tmpFile?.nameWithoutExtension)
                 audioEt.setSelection(0, audioEt.length())
                 audioEt.requestFocus()
+            }
+            STATUS_ALARM -> {
+                secondaryButton.visibility = View.VISIBLE
+                inputText.visibility = View.GONE
+                audioEt.visibility = View.GONE
             }
         }
         isAnimating = false

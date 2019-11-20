@@ -98,16 +98,52 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <ImageButton
-        android:id="@+id/fakeButton"
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:id="@+id/clockMask"
+        android:background="@color/mask"
+        android:alpha="0"
+        android:visibility="gone"
+        android:elevation="2dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <com.stgi.kotebook.ClockButton
+        android:id="@+id/alarmButton"
+        android:layout_width="@dimen/fab_size"
+        android:layout_height="@dimen/fab_size"
+        android:layout_margin="@dimen/fab_margin"
+        android:contentDescription="@null"
+        android:elevation="2dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+    </com.stgi.kotebook.ClockButton>
+
+    <!--ImageButton
+        android:id="@+id/alarmButton"
         android:layout_width="@dimen/fab_size"
         android:layout_height="@dimen/fab_size"
         android:layout_margin="@dimen/fab_margin"
         android:background="@drawable/circle"
+        android:foreground="@drawable/circular_ripple"
         android:contentDescription="@null"
         android:elevation="2dp"
-        android:focusable="false"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent">
+    </ImageButton>
+
+    <com.stgi.kotebook.ClockView
+        android:id="@+id/clockView"
+        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:elevation="2dp"
+        android:background="@null"
+        app:layout_constraintTop_toTopOf="@id/alarmButton"
+        app:layout_constraintBottom_toBottomOf="@id/alarmButton"
+        app:layout_constraintStart_toStartOf="@id/alarmButton"
+        app:layout_constraintEnd_toEndOf="@id/alarmButton"/-->
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <View
+        android:id="@+id/outerCircle"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/circle_white"
+        app:layout_constraintWidth_percent="1"
+        app:layout_constraintHeight_percent="1"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+    <View
+        android:id="@+id/innerCircle"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/circle"
+        app:layout_constraintWidth_percent="0.90"
+        app:layout_constraintHeight_percent="0.90"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+    <LinearLayout
+        android:id="@+id/hourPointer"
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        app:layout_constraintWidth_percent="0.05"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:rotation="60">
+
+        <View
+            android:layout_width="match_parent"
+            android:clickable="false"
+            android:layout_height="0dp"
+            android:layout_weight="0.6"/>
+
+        <View
+            android:id="@+id/hourHand"
+            android:clickable="false"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@android:color/white"
+            android:layout_weight="0.65"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:clickable="false"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+    </LinearLayout>
+    
+    <LinearLayout
+        android:id="@+id/minutesPointer"
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        app:layout_constraintWidth_percent="0.05"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:rotation="0">
+
+        <View
+            android:id="@+id/minutesHand"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:clickable="false"
+            android:background="@android:color/white"
+            android:layout_weight="1.25"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:clickable="false"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

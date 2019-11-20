@@ -3,6 +3,7 @@
     <color name="colorPrimary">#FFEBEE</color>
     <color name="colorPrimaryDark">#FFCDD2</color>
     <color name="colorAccent">#E57373</color>
+    <color name="mask">#40000000</color>
 
     //NOTES
     <color name="noteColor0">#EF9A9A</color>

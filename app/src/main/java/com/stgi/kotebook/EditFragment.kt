@@ -25,6 +25,7 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.net.Uri
 import android.view.*
+import android.widget.Toast
 import androidx.core.view.forEach
 import kotlinx.android.synthetic.main.fragment_audio.*
 import kotlinx.android.synthetic.main.fragment_audio.view.playerView
@@ -37,6 +38,7 @@ import kotlinx.android.synthetic.main.fragment_writing.view.fakeView
 import kotlinx.android.synthetic.main.fragment_writing.view.paintButton
 import kotlinx.android.synthetic.main.fragment_writing.view.paletteMask
 import kotlinx.android.synthetic.main.fragment_writing.view.titleEt
+import kotlinx.android.synthetic.main.layout_retracted.*
 import java.io.File
 import kotlin.math.max
 
@@ -105,6 +107,18 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
 
         view.paintButton.setOnClickListener { showOrHidePalette(shouldShow = !isPaletteShown) }
         view.paletteMask.setOnTouchListener { _, _ -> true }
+
+        view.alarmButton.setOnClickListener {
+            (context as MainActivity).let {
+                it.pushStatus(STATUS_ALARM, AlarmStrategy(it))
+            }
+        }
+        //view.clockView.isEnabled = false
+        view.clockMask.setOnTouchListener { _, ev ->
+            if (MotionEvent.ACTION_DOWN == ev?.action)
+                activity?.onBackPressed()
+            true
+        }
 
         view.titleEt.setText(note!!.title)
         view.titleEt.onFocusChangeListener = textFocusListener
@@ -261,6 +275,69 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
     }
 
     abstract fun collapseButtonsInternal(set: ConstraintSet)
+
+    fun expandClock() {
+        view?.alarmButton?.asClock()
+
+        val set = ConstraintSet()
+        set.clone(getConstraintLayout())
+
+        set.constrainWidth(view!!.alarmButton.id, resources.getDimension(R.dimen.bigger_play_button_size).toInt())
+        set.constrainHeight(view!!.alarmButton.id, resources.getDimension(R.dimen.bigger_play_button_size).toInt())
+        set.connect(view!!.alarmButton.id, TOP)
+        set.connect(view!!.alarmButton.id, BOTTOM)
+        set.connect(view!!.alarmButton.id, START)
+        set.connect(view!!.alarmButton.id, END)
+
+        TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().apply {
+            duration = 150L
+            addListener(StartToFinishTaskListener(startTask = Runnable {
+                view!!.alarmButton.showAmPmButton()
+                view!!.clockMask.apply {
+                    alpha = 0f
+                    visibility = View.VISIBLE
+                }.animate().apply {
+                    cancel()
+                    alpha(1f)
+                    duration = 150L
+                    start()
+                }
+            }))
+        })
+        set.applyTo(getConstraintLayout())
+    }
+
+    fun collapseClock() {
+        view?.alarmButton?.asButton()
+
+        val set = ConstraintSet()
+        set.clone(getConstraintLayout())
+
+        set.constrainWidth(view!!.alarmButton.id, resources.getDimension(R.dimen.fab_size).toInt())
+        set.constrainHeight(view!!.alarmButton.id, resources.getDimension(R.dimen.fab_size).toInt())
+        set.clear(view!!.alarmButton.id, TOP)
+        set.clear(view!!.alarmButton.id, START)
+        set.connect(view!!.alarmButton.id, END, PARENT_ID, END, resources.getDimension(R.dimen.fab_margin).toInt())
+        if (this is WritingFragment)
+            set.connect(view!!.alarmButton.id, BOTTOM, bulletsButton.id, TOP, resources.getDimension(R.dimen.fab_margin).toInt())
+        else
+            set.connect(view!!.alarmButton.id, BOTTOM, PARENT_ID, BOTTOM, resources.getDimension(R.dimen.secondary_fabs_height).toInt())
+
+        TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().apply {
+            duration = 150L
+            addListener(StartToFinishTaskListener(startTask = Runnable {
+                view!!.alarmButton.hideAmPmButton()
+                view!!.clockMask.animate().apply {
+                    cancel()
+                    alpha(0f)
+                    duration = 150L
+                    withEndAction { view!!.clockMask.visibility = View.GONE }
+                    start()
+                }
+            }))
+        })
+        set.applyTo(getConstraintLayout())
+    }
 
     protected fun hidePalette(view: View? = getView()) {
         showOrHidePalette(view, false)
@@ -468,10 +545,12 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
 
         override fun expandButtonsInternal(set: ConstraintSet) {
             set.connect(bulletsButton.id, BOTTOM, PARENT_ID, BOTTOM, resources.getDimension(R.dimen.secondary_fabs_height).toInt())
+            set.connect(view!!.alarmButton.id, BOTTOM, bulletsButton.id, TOP, resources.getDimension(R.dimen.fab_margin).toInt())
         }
 
         override fun collapseButtonsInternal(set: ConstraintSet) {
             set.connect(bulletsButton.id, BOTTOM, resources.getDimension(R.dimen.default_margin).toInt())
+            set.connect(view!!.alarmButton.id, BOTTOM, resources.getDimension(R.dimen.default_margin).toInt())
         }
 
         override fun showOrHidePalette(view: View?, shouldShow: Boolean) {
@@ -537,8 +616,13 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
             set.connect(playerView.id, TOP, fakeView.id, TOP)
         }
 
-        override fun expandButtonsInternal(set: ConstraintSet) { }
-        override fun collapseButtonsInternal(set: ConstraintSet) { }
+        override fun expandButtonsInternal(set: ConstraintSet) {
+            set.connect(view!!.alarmButton.id, BOTTOM, PARENT_ID, BOTTOM, resources.getDimension(R.dimen.secondary_fabs_height).toInt())
+        }
+
+        override fun collapseButtonsInternal(set: ConstraintSet) {
+            set.connect(view!!.alarmButton.id, BOTTOM, resources.getDimension(R.dimen.default_margin).toInt())
+        }
 
         override fun openEditingInternal() {
             playerView.stop()
@@ -624,6 +708,41 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
         override fun onPrimaryClick() {
             closeEditing()
             context.pushStatus(STATUS_EDIT, EditStrategy(context))
+        }
+    }
+
+    inner class AlarmStrategy(context: MainActivity): MainActivity.OnClickStrategy(context) {
+        override fun getPrimaryDrawable() = resources.getDrawable(R.drawable.done, context.theme)
+        override fun getSecondaryDrawable() = resources.getDrawable(R.drawable.cancel, context.theme)
+
+        private val startingHour: Int = view!!.alarmButton.getHour()
+        private val startingMinute: Int = view!!.alarmButton.getMinute()
+
+        override fun initialize() {
+            super.initialize()
+            context.secondaryButton.visibility = View.VISIBLE
+            expandClock()
+        }
+
+        override fun onBackPressed(): Boolean {
+            view!!.alarmButton.setHour(startingHour)
+            view!!.alarmButton.setMinute(startingMinute)
+
+            context.secondaryButton.visibility = View.GONE
+            collapseClock()
+            context.pushStatus(STATUS_CONFIRM, ConfirmStrategy(context))
+            return false
+        }
+
+        override fun onPrimaryClick() {
+            Toast.makeText(context, view!!.alarmButton.getTimeMessage(), Toast.LENGTH_SHORT).show()
+            context.secondaryButton.visibility = View.GONE
+            collapseClock()
+            context.pushStatus(STATUS_CONFIRM, ConfirmStrategy(context))
+        }
+
+        override fun onSecondaryClick() {
+            activity?.onBackPressed()
         }
     }
 

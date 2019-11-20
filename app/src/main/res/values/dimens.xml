@@ -40,4 +40,6 @@
     <dimen name="bigger_play_button_size">256dp</dimen>
     <dimen name="cassette_player_margin">8dp</dimen>
     <dimen name="cassette_progress_height">4dp</dimen>
+    <dimen name="clock_padding">4dp</dimen>
+    <dimen name="no_dimen">0dp</dimen>
 </resources>
