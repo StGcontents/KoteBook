@@ -84,6 +84,16 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
+    <DatePicker
+        android:id="@+id/datePicker"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:elevation="2dp"
+        android:background="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="parent" />
+
     <com.stgi.kotebook.ClockButton
         android:id="@+id/alarmButton"
         android:layout_width="@dimen/fab_size"
@@ -130,5 +140,19 @@
         android:focusable="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/leftGuideline"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="-32dp"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/rightGuideline"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintGuide_end="-32dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

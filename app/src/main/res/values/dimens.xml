@@ -42,4 +42,5 @@
     <dimen name="cassette_progress_height">4dp</dimen>
     <dimen name="clock_padding">4dp</dimen>
     <dimen name="no_dimen">0dp</dimen>
+    <dimen name="half_shown_margin">32dp</dimen>
 </resources>

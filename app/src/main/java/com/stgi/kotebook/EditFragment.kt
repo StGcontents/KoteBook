@@ -40,6 +40,9 @@ import kotlinx.android.synthetic.main.fragment_writing.view.paletteMask
 import kotlinx.android.synthetic.main.fragment_writing.view.titleEt
 import kotlinx.android.synthetic.main.layout_retracted.*
 import java.io.File
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.math.max
 
 
@@ -110,10 +113,21 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
 
         view.alarmButton.setOnClickListener {
             (context as MainActivity).let {
-                it.pushStatus(STATUS_ALARM, AlarmStrategy(it))
+                it.pushStatus(STATUS_CLOCK, ClockStrategy(it))
             }
         }
-        //view.clockView.isEnabled = false
+        view.post {
+            Calendar.getInstance().apply {
+                time = Date()
+                view.datePicker.minDate = time.time
+                view.datePicker.updateDate(
+                    get(Calendar.YEAR),
+                    get(Calendar.MONTH),
+                    get(Calendar.DAY_OF_MONTH)
+                )
+            }
+        }
+
         view.clockMask.setOnTouchListener { _, ev ->
             if (MotionEvent.ACTION_DOWN == ev?.action)
                 activity?.onBackPressed()
@@ -278,6 +292,9 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
 
     fun expandClock() {
         view?.alarmButton?.asClock()
+        view?.datePickerMask?.setOnClickListener {
+            slideCalendarIn()
+        }
 
         val set = ConstraintSet()
         set.clone(getConstraintLayout())
@@ -288,6 +305,11 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
         set.connect(view!!.alarmButton.id, BOTTOM)
         set.connect(view!!.alarmButton.id, START)
         set.connect(view!!.alarmButton.id, END)
+
+        set.constrainWidth(view!!.datePickerMask.id, resources.getDimension(R.dimen.fab_size).toInt())
+        set.constrainHeight(view!!.datePickerMask.id, resources.getDimension(R.dimen.fab_size).toInt())
+        set.clear(view!!.datePickerMask.id, START)
+        set.connect(view!!.datePickerMask.id, END, view!!.leftGuideline.id, END)
 
         TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().apply {
             duration = 150L
@@ -323,9 +345,18 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
         else
             set.connect(view!!.alarmButton.id, BOTTOM, PARENT_ID, BOTTOM, resources.getDimension(R.dimen.secondary_fabs_height).toInt())
 
+        set.constrainWidth(view!!.datePickerMask.id, resources.getDimension(R.dimen.fab_size).toInt())
+        set.constrainHeight(view!!.datePickerMask.id, resources.getDimension(R.dimen.fab_size).toInt())
+        set.clear(view!!.datePickerMask.id, START)
+        set.connect(view!!.datePickerMask.id, END, PARENT_ID, START)
+        set.connect(view!!.datePickerMask.id, TOP, PARENT_ID, TOP)
+        set.connect(view!!.datePickerMask.id, BOTTOM, PARENT_ID, BOTTOM)
+
         TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().apply {
             duration = 150L
             addListener(StartToFinishTaskListener(startTask = Runnable {
+                view?.datePicker?.visibility = View.GONE
+                view?.datePickerMask?.visibility = View.VISIBLE
                 view!!.alarmButton.hideAmPmButton()
                 view!!.clockMask.animate().apply {
                     cancel()
@@ -335,6 +366,70 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
                     start()
                 }
             }))
+        })
+        set.applyTo(getConstraintLayout())
+    }
+
+    fun slideCalendarIn() {
+        view?.alarmButton?.asButton()
+        view?.datePickerMask?.setOnClickListener(null)
+        view?.datePicker?.visibility = View.INVISIBLE
+
+        val set = ConstraintSet()
+        set.clone(getConstraintLayout())
+
+        set.constrainWidth(view!!.alarmButton.id, resources.getDimension(R.dimen.fab_size).toInt())
+        set.constrainHeight(view!!.alarmButton.id, resources.getDimension(R.dimen.fab_size).toInt())
+        set.clear(view!!.alarmButton.id, END)
+        set.connect(view!!.alarmButton.id, START, view!!.rightGuideline.id, START)
+
+        set.constrainWidth(view!!.datePickerMask.id, resources.getDimension(R.dimen.no_dimen).toInt())
+        set.constrainHeight(view!!.datePickerMask.id, resources.getDimension(R.dimen.no_dimen).toInt())
+        set.connect(view!!.datePickerMask.id, START, view!!.datePicker.id, START)
+        set.connect(view!!.datePickerMask.id, END, view!!.datePicker.id, END)
+        set.connect(view!!.datePickerMask.id, TOP, view!!.datePicker.id, TOP)
+        set.connect(view!!.datePickerMask.id, BOTTOM, view!!.datePicker.id, BOTTOM)
+
+        TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().apply {
+            duration = 150L
+            addListener(StartToFinishTaskListener(startTask = Runnable {
+                view!!.alarmButton.hideAmPmButton()
+            }, endTask = Runnable {
+                view?.datePicker?.visibility = View.VISIBLE
+                view?.datePickerMask?.visibility = View.INVISIBLE
+            }))
+        })
+        set.applyTo(getConstraintLayout())
+    }
+
+    fun slideCalendarOut() {
+        view?.alarmButton?.asClock()
+        view?.datePickerMask?.setOnClickListener {
+            slideCalendarIn()
+        }
+
+        val set = ConstraintSet()
+        set.clone(getConstraintLayout())
+
+        set.constrainWidth(view!!.alarmButton.id, resources.getDimension(R.dimen.bigger_play_button_size).toInt())
+        set.constrainHeight(view!!.alarmButton.id, resources.getDimension(R.dimen.bigger_play_button_size).toInt())
+        set.connect(view!!.alarmButton.id, START, PARENT_ID, START)
+        set.connect(view!!.alarmButton.id, END, PARENT_ID, END)
+
+        set.constrainWidth(view!!.datePickerMask.id, resources.getDimension(R.dimen.fab_size).toInt())
+        set.constrainHeight(view!!.datePickerMask.id, resources.getDimension(R.dimen.fab_size).toInt())
+        set.clear(view!!.datePickerMask.id, START)
+        set.connect(view!!.datePickerMask.id, TOP, PARENT_ID, TOP)
+        set.connect(view!!.datePickerMask.id, BOTTOM, PARENT_ID, BOTTOM)
+        set.connect(view!!.datePickerMask.id, END, view!!.leftGuideline.id, END)
+
+        TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().apply {
+            duration = 150L
+            addListener(StartToFinishTaskListener(startTask = Runnable {
+                view?.datePicker?.visibility = View.INVISIBLE
+                view?.datePickerMask?.visibility = View.VISIBLE
+                view!!.alarmButton.hideAmPmButton()
+            }, endTask = Runnable { view!!.datePicker.visibility = View.GONE }))
         })
         set.applyTo(getConstraintLayout())
     }
@@ -711,7 +806,71 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
         }
     }
 
-    inner class AlarmStrategy(context: MainActivity): MainActivity.OnClickStrategy(context) {
+    inner class ClockStrategy(context: MainActivity): MainActivity.OnClickStrategy(context) {
+        override fun getPrimaryDrawable() = resources.getDrawable(R.drawable.done, context.theme)
+        override fun getSecondaryDrawable() = resources.getDrawable(R.drawable.cancel, context.theme)
+
+        private val startingHour: Int = view!!.alarmButton.getHour()
+        private val startingMinute: Int = view!!.alarmButton.getMinute()
+
+        override fun initialize() {
+            super.initialize()
+            context.secondaryButton.visibility = View.VISIBLE
+            view!!.alarmButton.setOnClickListener {
+                slideCalendarOut()
+            }
+            expandClock()
+        }
+
+        override fun onBackPressed(): Boolean {
+            view!!.alarmButton.setHour(startingHour)
+            view!!.alarmButton.setMinute(startingMinute)
+
+            context.secondaryButton.visibility = View.GONE
+            collapseClock()
+            context.pushStatus(STATUS_CONFIRM, ConfirmStrategy(context))
+
+            onExit()
+            return false
+        }
+
+        override fun onPrimaryClick() {
+            retrieveDate()
+            context.secondaryButton.visibility = View.GONE
+            collapseClock()
+            onExit()
+
+            context.pushStatus(STATUS_CONFIRM, ConfirmStrategy(context))
+        }
+
+        override fun onSecondaryClick() {
+            activity?.onBackPressed()
+        }
+
+        private fun onExit() {
+            view!!.alarmButton.setOnClickListener {
+                context.let {
+                    it.pushStatus(STATUS_CLOCK, ClockStrategy(it))
+                }
+            }
+        }
+
+        private fun retrieveDate() {
+            val hhmm: Long = view!!.alarmButton.getTime()
+            val calendar = Calendar.getInstance()
+            view!!.datePicker.apply {
+                calendar.set(Calendar.YEAR, year)
+                calendar.set(Calendar.MONTH, month)
+                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            }
+            var dateTime: Long = calendar.timeInMillis + hhmm
+            if (dateTime < Date().time)
+                dateTime += 24L * 60L * 60L * 1000L
+            Toast.makeText(context, "Alarm set to " + DateFormat.getInstance().format(Date(dateTime)), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    inner class CalendarStrategy(context: MainActivity): MainActivity.OnClickStrategy(context) {
         override fun getPrimaryDrawable() = resources.getDrawable(R.drawable.done, context.theme)
         override fun getSecondaryDrawable() = resources.getDrawable(R.drawable.cancel, context.theme)
 
