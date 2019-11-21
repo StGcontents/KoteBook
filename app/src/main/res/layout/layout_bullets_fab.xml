@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ImageButton android:id="@+id/bulletsButton"
+    android:layout_width="@dimen/fab_size"
+    android:layout_height="@dimen/fab_size"
+    android:layout_margin="@dimen/fab_margin"
+    android:background="@drawable/circle"
+    android:contentDescription="@null"
+    android:src="@drawable/bullets"
+    android:elevation="2dp"
+    android:foreground="@drawable/circular_ripple"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android" />

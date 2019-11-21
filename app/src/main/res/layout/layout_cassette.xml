@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.stgi.kotebook.CassettePlayerView android:id="@+id/playerView"
+    app:layout_constraintEnd_toEndOf="@+id/fakeView"
+    app:layout_constraintStart_toStartOf="@+id/fakeView"
+    app:layout_constraintBottom_toBottomOf="@+id/fakeView"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" />

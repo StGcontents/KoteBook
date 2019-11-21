@@ -1,15 +1,20 @@
 package com.stgi.kotebook
 
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.drawable.TransitionDrawable
+import android.net.Uri
 import android.os.Bundle
 import android.transition.ChangeBounds
 import android.transition.TransitionManager
+import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.CompoundButton
 import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
@@ -17,31 +22,18 @@ import androidx.constraintlayout.widget.ConstraintSet.*
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
+import androidx.core.view.forEach
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import kotlinx.android.synthetic.main.fragment_writing.*
-import kotlinx.android.synthetic.main.fragment_writing.view.*
-import android.animation.ValueAnimator
-import android.content.Context
-import android.net.Uri
-import android.view.*
-import android.widget.Toast
-import androidx.core.view.forEach
-import kotlinx.android.synthetic.main.fragment_audio.*
-import kotlinx.android.synthetic.main.fragment_audio.view.playerView
-import kotlinx.android.synthetic.main.fragment_writing.fakeView
-import kotlinx.android.synthetic.main.fragment_writing.paintButton
-import kotlinx.android.synthetic.main.fragment_writing.paletteMask
-import kotlinx.android.synthetic.main.fragment_writing.titleEt
-import kotlinx.android.synthetic.main.fragment_writing.titleFrame
-import kotlinx.android.synthetic.main.fragment_writing.view.fakeView
-import kotlinx.android.synthetic.main.fragment_writing.view.paintButton
-import kotlinx.android.synthetic.main.fragment_writing.view.paletteMask
-import kotlinx.android.synthetic.main.fragment_writing.view.titleEt
+import kotlinx.android.synthetic.main.fragment_edit.*
+import kotlinx.android.synthetic.main.fragment_edit.view.*
+import kotlinx.android.synthetic.main.layout_bullets_fab.view.*
+import kotlinx.android.synthetic.main.layout_cassette.view.*
 import kotlinx.android.synthetic.main.layout_retracted.*
+import kotlinx.android.synthetic.main.layout_text_editor.*
+import kotlinx.android.synthetic.main.layout_text_editor.view.*
 import java.io.File
 import java.text.DateFormat
-import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.max
 
@@ -90,14 +82,12 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
 
     private fun getConstraintLayout() = view as ConstraintLayout
 
-    abstract fun getLayout(): Int
-
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(getLayout(), container, false) as ConstraintLayout
+        val view = inflater.inflate(R.layout.fragment_edit, container, false) as ConstraintLayout
 
         view.visibility = View.INVISIBLE
 
@@ -213,6 +203,8 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
 
             if (note!!.title.isNotEmpty()) set.constrainHeight(titleFrame.id, WRAP_CONTENT)
 
+            set.connect(view!!.datePickerMask.id, END, PARENT_ID, START, resources.getDimension(R.dimen.fab_margin).toInt())
+
             applyStartingConstraintsInternal(set, duration)
 
             set.applyTo(getConstraintLayout())
@@ -309,7 +301,7 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
         set.constrainWidth(view!!.datePickerMask.id, resources.getDimension(R.dimen.fab_size).toInt())
         set.constrainHeight(view!!.datePickerMask.id, resources.getDimension(R.dimen.fab_size).toInt())
         set.clear(view!!.datePickerMask.id, START)
-        set.connect(view!!.datePickerMask.id, END, view!!.leftGuideline.id, END)
+        set.connect(view!!.datePickerMask.id, END, view!!.leftGuideline.id, END, 0)
 
         TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().apply {
             duration = 150L
@@ -341,14 +333,14 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
         set.clear(view!!.alarmButton.id, START)
         set.connect(view!!.alarmButton.id, END, PARENT_ID, END, resources.getDimension(R.dimen.fab_margin).toInt())
         if (this is WritingFragment)
-            set.connect(view!!.alarmButton.id, BOTTOM, bulletsButton.id, TOP, resources.getDimension(R.dimen.fab_margin).toInt())
+            set.connect(view!!.alarmButton.id, BOTTOM, view!!.bulletsButton.id, TOP, resources.getDimension(R.dimen.fab_margin).toInt())
         else
             set.connect(view!!.alarmButton.id, BOTTOM, PARENT_ID, BOTTOM, resources.getDimension(R.dimen.secondary_fabs_height).toInt())
 
         set.constrainWidth(view!!.datePickerMask.id, resources.getDimension(R.dimen.fab_size).toInt())
         set.constrainHeight(view!!.datePickerMask.id, resources.getDimension(R.dimen.fab_size).toInt())
         set.clear(view!!.datePickerMask.id, START)
-        set.connect(view!!.datePickerMask.id, END, PARENT_ID, START)
+        set.connect(view!!.datePickerMask.id, END, PARENT_ID, START, resources.getDimension(R.dimen.fab_margin).toInt())
         set.connect(view!!.datePickerMask.id, TOP, PARENT_ID, TOP)
         set.connect(view!!.datePickerMask.id, BOTTOM, PARENT_ID, BOTTOM)
 
@@ -386,15 +378,13 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
         set.constrainWidth(view!!.datePickerMask.id, resources.getDimension(R.dimen.no_dimen).toInt())
         set.constrainHeight(view!!.datePickerMask.id, resources.getDimension(R.dimen.no_dimen).toInt())
         set.connect(view!!.datePickerMask.id, START, view!!.datePicker.id, START)
-        set.connect(view!!.datePickerMask.id, END, view!!.datePicker.id, END)
+        set.connect(view!!.datePickerMask.id, END, view!!.datePicker.id, END, 0)
         set.connect(view!!.datePickerMask.id, TOP, view!!.datePicker.id, TOP)
         set.connect(view!!.datePickerMask.id, BOTTOM, view!!.datePicker.id, BOTTOM)
 
         TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().apply {
             duration = 150L
-            addListener(StartToFinishTaskListener(startTask = Runnable {
-                view!!.alarmButton.hideAmPmButton()
-            }, endTask = Runnable {
+            addListener(StartToFinishTaskListener(endTask = Runnable {
                 view?.datePicker?.visibility = View.VISIBLE
                 view?.datePickerMask?.visibility = View.INVISIBLE
             }))
@@ -421,14 +411,13 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
         set.clear(view!!.datePickerMask.id, START)
         set.connect(view!!.datePickerMask.id, TOP, PARENT_ID, TOP)
         set.connect(view!!.datePickerMask.id, BOTTOM, PARENT_ID, BOTTOM)
-        set.connect(view!!.datePickerMask.id, END, view!!.leftGuideline.id, END)
+        set.connect(view!!.datePickerMask.id, END, view!!.leftGuideline.id, END, 0)
 
         TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().apply {
             duration = 150L
             addListener(StartToFinishTaskListener(startTask = Runnable {
                 view?.datePicker?.visibility = View.INVISIBLE
                 view?.datePickerMask?.visibility = View.VISIBLE
-                view!!.alarmButton.hideAmPmButton()
             }, endTask = Runnable { view!!.datePicker.visibility = View.GONE }))
         })
         set.applyTo(getConstraintLayout())
@@ -593,16 +582,23 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
      * Editing text notes
      */
     class WritingFragment: EditFragment() {
-        override fun getLayout(): Int = R.layout.fragment_writing
 
         override fun onCreateInternal(view: View) {
-            view.bulletsButton.setOnClickListener { bulletPointEditor.addBulletPoint(); hidePalette() }
+            view as ConstraintLayout
 
-            view.bulletPointScrollView.setOnTouchListener { _, _ ->
+            val bulletPointScrollView = LayoutInflater.from(context).inflate(R.layout.layout_text_editor, view, false)
+            view.addView(bulletPointScrollView, view.indexOfChild(view.titleFrame) + 1)
+
+            val bulletsButton = LayoutInflater.from(context).inflate(R.layout.layout_bullets_fab, view, false)
+            view.addView(bulletsButton, view.indexOfChild(view.paintButton) + 1)
+
+            bulletsButton.setOnClickListener { view.bulletPointEditor.addBulletPoint(); hidePalette() }
+
+            bulletPointScrollView.setOnTouchListener { _, _ ->
                 hidePalette()
                 activity?.let {
                     (it as MainActivity).pushStatus(STATUS_CONFIRM, ConfirmStrategy(it))
-                    bulletPointEditor.requestFocus()
+                    view.bulletPointEditor.requestFocus()
                 }
                 false
             }
@@ -611,8 +607,8 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
         }
 
         override fun onStartingConstraintsSet(view: View) {
-            bulletPointEditor.setText(note!!.text!!)
-            bulletPointScrollView.invalidate()
+            view.bulletPointEditor.setText(note!!.text!!)
+            view.bulletPointScrollView.invalidate()
             view.bulletPointEditor.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { _, _ ->
                 hidePalette()
                 if (bulletPointEditor == null) return@OnCheckedChangeListener
@@ -639,12 +635,12 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
 
 
         override fun expandButtonsInternal(set: ConstraintSet) {
-            set.connect(bulletsButton.id, BOTTOM, PARENT_ID, BOTTOM, resources.getDimension(R.dimen.secondary_fabs_height).toInt())
-            set.connect(view!!.alarmButton.id, BOTTOM, bulletsButton.id, TOP, resources.getDimension(R.dimen.fab_margin).toInt())
+            set.connect(view!!.bulletsButton.id, BOTTOM, PARENT_ID, BOTTOM, resources.getDimension(R.dimen.secondary_fabs_height).toInt())
+            set.connect(view!!.alarmButton.id, BOTTOM, view!!.bulletsButton.id, TOP, resources.getDimension(R.dimen.fab_margin).toInt())
         }
 
         override fun collapseButtonsInternal(set: ConstraintSet) {
-            set.connect(bulletsButton.id, BOTTOM, resources.getDimension(R.dimen.default_margin).toInt())
+            set.connect(view!!.bulletsButton.id, BOTTOM, resources.getDimension(R.dimen.default_margin).toInt())
             set.connect(view!!.alarmButton.id, BOTTOM, resources.getDimension(R.dimen.default_margin).toInt())
         }
 
@@ -686,10 +682,12 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
      * Editing audio notes
      */
     class AudioFragment: EditFragment() {
-        override fun getLayout(): Int = R.layout.fragment_audio
 
         override fun onCreateInternal(view: View) {
-            view.playerView.setColorFilter(note!!.getTextColor())
+            view as ConstraintLayout
+            val playerView = LayoutInflater.from(context).inflate(R.layout.layout_cassette, view, false) as CassettePlayerView
+            playerView.setColorFilter(note!!.getTextColor())
+            view.addView(playerView, view.indexOfChild(view.titleFrame) + 1)
         }
         override fun onStartingConstraintsSet(view: View) { }
 
@@ -701,14 +699,14 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
         }
 
         override fun applyStartingConstraintsInternal(set: ConstraintSet, duration: Long) {
-            set.constrainHeight(playerView.id,
+            set.constrainHeight(view!!.playerView.id,
                 arguments!!.getInt(ARG_PLAYER_H, resources.getDimension(R.dimen.play_button_size).toInt()))
-            set.clear(playerView.id, TOP)
+            set.clear(view!!.playerView.id, TOP)
         }
 
         override fun applyFinalConstraintsInternal(set: ConstraintSet, duration: Long) {
-            set.constrainHeight(playerView.id, resources.getDimension(R.dimen.bigger_play_button_size).toInt())
-            set.connect(playerView.id, TOP, fakeView.id, TOP)
+            set.constrainHeight(view!!.playerView.id, resources.getDimension(R.dimen.bigger_play_button_size).toInt())
+            set.connect(view!!.playerView.id, TOP, fakeView.id, TOP)
         }
 
         override fun expandButtonsInternal(set: ConstraintSet) {
@@ -720,8 +718,8 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
         }
 
         override fun openEditingInternal() {
-            playerView.stop()
-            playerView.isEnabled = false
+            view!!.playerView.stop()
+            view!!.playerView.isEnabled = false
         }
 
         override fun closeEditingInternal(saveEdits: Boolean) {
@@ -731,12 +729,12 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
                 data.title = editedTitle
                 activity?.let { ViewModelProviders.of(it) }?.get(NotesModel::class.java)?.update(data)
             }
-            playerView.isEnabled = true
+            view!!.playerView.isEnabled = true
         }
 
         override fun applyColors(view: View?) {
             super.applyColors(view)
-            playerView?.setColorFilter(note!!.getTextColor())
+            view!!.playerView?.setColorFilter(note!!.getTextColor())
         }
 
         fun getFilepath(name: String?) = (activity as MainActivity).directory.absolutePath + "/" + name
@@ -770,7 +768,7 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
 
         override fun onBackPressed(): Boolean {
             if (this@EditFragment is AudioFragment)
-                this@EditFragment.playerView.stop()
+                this@EditFragment.view!!.playerView.stop()
             exit()
             context.pushStatus(STATUS_INIT)
             return false
