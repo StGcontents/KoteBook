@@ -123,7 +123,7 @@ class VisualizerView(context: Context, attributeSet: AttributeSet): ConstraintLa
                 else -> null
             }
             if (sample != null)
-                updateAmplitude(min(sample / 16000f, 1f))
+                updateAmplitude(min(sample / 32000f, 1f))
         }
     }
 

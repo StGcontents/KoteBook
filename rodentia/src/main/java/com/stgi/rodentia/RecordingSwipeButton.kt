@@ -4,17 +4,21 @@ import android.content.Context
 import android.media.MediaRecorder
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewOutlineProvider
 import kotlinx.android.synthetic.main.layout_fab_audio.view.*
 import java.io.File
 import java.lang.Integer.max
 
-const val REC_MINIMUM = 5000
+const val REC_MINIMUM = 15000
 
 class RecordingSwipeButton(context: Context, attributeSet: AttributeSet?): SwipeButton(context, attributeSet),
     VisualizerView.OnAutoReleaseListener{
     private val visualizer: VisualizerView = fabLayout.visualizer
 
     init {
+        visualizer.outlineProvider = ViewOutlineProvider.BACKGROUND
+        visualizer.clipToOutline = true
+
         maxDuration = max(maxDuration, REC_MINIMUM)
 
         val a = context.theme.obtainStyledAttributes(

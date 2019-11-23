@@ -32,29 +32,30 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" >
 
-    <View
-        android:id="@+id/circlet"
-        android:layout_width="@dimen/fab_size"
-        android:layout_height="@dimen/fab_size"
-        android:background="@drawable/circle"
-        android:foreground="@android:color/transparent"
-        android:focusable="false"/>
+        <View
+            android:id="@+id/circlet"
+            android:layout_width="@dimen/fab_size"
+            android:layout_height="@dimen/fab_size"
+            android:background="@drawable/circle"
+            android:foreground="@android:color/transparent"
+            android:focusable="false"/>
 
-    <ImageButton
-        android:id="@+id/fab"
-        android:src="@drawable/mic"
-        android:background="@null"
-        android:foreground="@drawable/circular_ripple"
-        android:layout_width="@dimen/fab_size"
-        android:layout_height="@dimen/fab_size"/>
+        <ImageButton
+            android:id="@+id/fab"
+            android:src="@drawable/mic"
+            android:background="@null"
+            android:foreground="@drawable/circular_ripple"
+            android:layout_width="@dimen/fab_size"
+            android:layout_height="@dimen/fab_size"/>
 
-    <com.stgi.rodentia.VisualizerView
-        android:id="@+id/visualizer"
-        android:visibility="gone"
-        android:padding="6dp"
-        app:visualizerStyle="centered|mirrored"
-        android:layout_width="@dimen/fab_size"
-        android:layout_height="@dimen/fab_size"/>
+        <com.stgi.rodentia.VisualizerView
+            android:id="@+id/visualizer"
+            android:visibility="gone"
+            android:padding="6dp"
+            android:background="@drawable/circle_outline"
+            app:visualizerStyle="centered|mirrored"
+            android:layout_width="@dimen/fab_size"
+            android:layout_height="@dimen/fab_size"/>
     </FrameLayout>
 
     <FrameLayout
