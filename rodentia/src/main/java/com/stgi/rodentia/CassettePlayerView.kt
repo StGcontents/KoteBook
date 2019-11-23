@@ -52,13 +52,13 @@ class CassettePlayerView(context: Context, attrs: AttributeSet): LinearLayout(co
         isFocusable = false
         isClickable = false
 
-        val player = LayoutInflater.from(context).inflate(com.stgi.rodentia.R.layout.cassette_player, this, false)
+        val player = LayoutInflater.from(context).inflate(R.layout.cassette_player, this, false)
         playButton = player.playButton
         cassetteLeft = player.cassetteLeft
         cassetteRight = player.cassetteRight
         addView(player)
 
-        barker = LayoutInflater.from(context).inflate(com.stgi.rodentia.R.layout.cassette_barker, this, false) as ConstraintLayout
+        barker = LayoutInflater.from(context).inflate(R.layout.cassette_barker, this, false) as ConstraintLayout
         progress = barker.progress
         buffer = barker.buffer
         addView(barker)

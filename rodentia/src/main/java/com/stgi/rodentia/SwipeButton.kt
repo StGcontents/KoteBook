@@ -169,7 +169,7 @@ open class SwipeButton(context: Context, attributeSet: AttributeSet?):
                 MotionEvent.ACTION_DOWN -> {
                     startX = ev.x
                     startingBound = fabLayout.x
-                    return false
+                    return true
                 }
                 MotionEvent.ACTION_MOVE -> {
                     move(ev.x - startX)
