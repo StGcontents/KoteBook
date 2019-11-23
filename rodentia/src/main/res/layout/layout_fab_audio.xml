@@ -52,6 +52,7 @@
         android:id="@+id/visualizer"
         android:visibility="gone"
         android:padding="6dp"
+        app:visualizerStyle="centered|mirrored"
         android:layout_width="@dimen/fab_size"
         android:layout_height="@dimen/fab_size"/>
     </FrameLayout>

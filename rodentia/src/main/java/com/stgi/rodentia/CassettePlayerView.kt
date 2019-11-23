@@ -111,12 +111,12 @@ class CassettePlayerView(context: Context, attrs: AttributeSet): LinearLayout(co
 
         val a = context.theme.obtainStyledAttributes(
             attrs,
-            com.stgi.rodentia.R.styleable.CassettePlayerView,
+            R.styleable.CassettePlayerView,
             0, 0
         )
 
         try {
-            val color = a.getColor(com.stgi.rodentia.R.styleable.CassettePlayerView_cassetteColor, Color.WHITE)
+            val color = a.getColor(R.styleable.CassettePlayerView_cassetteColor, Color.WHITE)
             setCassetteColor(color)
         } finally {
             a.recycle()

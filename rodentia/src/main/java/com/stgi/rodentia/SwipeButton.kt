@@ -77,7 +77,9 @@ open class SwipeButton(context: Context, attributeSet: AttributeSet?):
         setOnTouchListener { _, _ -> false }
 
         addView(fabLayout)
-        fabLayout.post { fab.setOnTouchListener(this) }
+        fabLayout.post {
+            fabLayout.fab.setOnTouchListener(this)
+        }
 
         val a = context.theme.obtainStyledAttributes(
             attributeSet,
@@ -167,7 +169,7 @@ open class SwipeButton(context: Context, attributeSet: AttributeSet?):
                 MotionEvent.ACTION_DOWN -> {
                     startX = ev.x
                     startingBound = fabLayout.x
-                    return true
+                    return false
                 }
                 MotionEvent.ACTION_MOVE -> {
                     move(ev.x - startX)
@@ -290,6 +292,14 @@ open class SwipeButton(context: Context, attributeSet: AttributeSet?):
             isSwitchedOn = false
             cancelAutoRelease()
             turnGuidesOn()
+            if (signal == VIBRATION) {
+                vibrator.vibrate(
+                    VibrationEffect.createOneShot(
+                        100L,
+                        VibrationEffect.DEFAULT_AMPLITUDE
+                    )
+                )
+            }
             if (isAutoRelease)
                 callback?.onAutoRelease()
             else callback?.onRelease()

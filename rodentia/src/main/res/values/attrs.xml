@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <declare-styleable name="VisualizerView" >
+        <attr name="samples" format="integer" />
+        <attr name="visualizerStyle" format="flags">
+            <flag name="top" value="8"/>
+            <flag name="centered" value="4"/>
+            <flag name="bottom" value="2"/>
+            <flag name="mirrored" value="1"/>
+        </attr>
+        <attr name="dotSize" format="dimension" />
+        <attr name="dotSpacing" format="dimension" />
+        <attr name="dotColor" format="color" />
+    </declare-styleable>
+
     <declare-styleable name="CassettePlayerView" >
         <attr name="cassetteColor" format="color" />
     </declare-styleable>
