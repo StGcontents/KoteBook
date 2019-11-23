@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.stgi.rodentia.VisualizerView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/visualizer"
+    android:visibility="gone"
+    android:layout_width="@dimen/fab_size"
+    android:layout_height="@dimen/fab_size"/>

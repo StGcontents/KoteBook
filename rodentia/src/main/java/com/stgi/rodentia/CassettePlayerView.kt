@@ -1,4 +1,4 @@
-package com.stgi.kotebook
+package com.stgi.rodentia
 
 import android.content.Context
 import android.graphics.Color
@@ -52,13 +52,13 @@ class CassettePlayerView(context: Context, attrs: AttributeSet): LinearLayout(co
         isFocusable = false
         isClickable = false
 
-        val player = LayoutInflater.from(context).inflate(R.layout.cassette_player, this, false)
+        val player = LayoutInflater.from(context).inflate(com.stgi.rodentia.R.layout.cassette_player, this, false)
         playButton = player.playButton
         cassetteLeft = player.cassetteLeft
         cassetteRight = player.cassetteRight
         addView(player)
 
-        barker = LayoutInflater.from(context).inflate(R.layout.cassette_barker, this, false) as ConstraintLayout
+        barker = LayoutInflater.from(context).inflate(com.stgi.rodentia.R.layout.cassette_barker, this, false) as ConstraintLayout
         progress = barker.progress
         buffer = barker.buffer
         addView(barker)
@@ -108,6 +108,19 @@ class CassettePlayerView(context: Context, attrs: AttributeSet): LinearLayout(co
         //cassetteLeft.setOnTouchListener(tl)
         //cassetteRight.setOnTouchListener(tl)
         isEnabled = false
+
+        val a = context.theme.obtainStyledAttributes(
+            attrs,
+            com.stgi.rodentia.R.styleable.CassettePlayerView,
+            0, 0
+        )
+
+        try {
+            val color = a.getColor(com.stgi.rodentia.R.styleable.CassettePlayerView_cassetteColor, Color.WHITE)
+            setCassetteColor(color)
+        } finally {
+            a.recycle()
+        }
 
         resetProgress()
     }
@@ -228,7 +241,7 @@ class CassettePlayerView(context: Context, attrs: AttributeSet): LinearLayout(co
         rotateTimer = null
     }
 
-    fun setColorFilter(color: Int) {
+    fun setCassetteColor(color: Int) {
         playButton.setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
         cassetteLeft.setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
         cassetteRight.setColorFilter(color, PorterDuff.Mode.SRC_ATOP)

@@ -10,6 +10,7 @@ import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.TransitionDrawable
+import android.media.AudioRouting
 import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Bundle
@@ -35,6 +36,8 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import androidx.transition.ChangeBounds
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
+import com.stgi.rodentia.CassettePlayerView
+import com.stgi.rodentia.SwipeButton
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.layout_retracted.*
 import kotlinx.android.synthetic.main.note_card.view.noteTitleTv
@@ -110,7 +113,7 @@ val palette = intArrayOf(
 
 const val DIRECTORY = "/KoteBook/"
 
-class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTouchHelperAdapter {
+class MainActivity : AppCompatActivity(), Transition.TransitionListener, SwipeButton.OnSwipeListener {
 
     private val adapter : NotesAdapter = NotesAdapter()
 
@@ -192,7 +195,8 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
             override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) { }
         })
 
-        audioFab.setSwipeAdapter(this)
+        //audioFab.setSwipeAdapter(this)
+        audioFab.setOnSwipeListener(this)
     }
 
     override fun onResume() {
@@ -299,11 +303,7 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
 
 
     /** RECORDING **/
-
-    override fun onItemMove(fromPosition: Int, toPosition: Int) = false
-    override fun onItemMoveEnded(fromPosition: Int, toPosition: Int) { }
-
-    override fun onItemSwiped(position: Int, direction: Int) {
+    override fun onSwiped(): Boolean {
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO)
             != PackageManager.PERMISSION_GRANTED ||
             checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -315,51 +315,21 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
                 Toast.makeText(this, "Take audio notes", Toast.LENGTH_LONG).show()
             } else */
             requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE), PERMISSIONS_REQUEST)
+            return false
         } else {
             pushStatus(STATUS_RECORDING)
-            initRecording()
+            return true
         }
     }
 
-    private fun initRecording() {
-        if (!isRecording) {
-            isRecording = true
-            audioFab.setIsRecording(true)
-
-            recorder = MediaRecorder().also {
-                it.setAudioSource(MediaRecorder.AudioSource.MIC)
-                it.setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS)
-                it.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-                tmpFile = File.createTempFile("rec", ".aac", cacheDir)
-                it.setOutputFile(tmpFile)
-                it.prepare()
-            }
-            recorder!!.start()
-
-            timer = object : CountDownTimer(10000L, 50L) {
-                override fun onFinish() {
-                    if (currentStrategy is RecStrategy)
-                        currentStrategy?.onPrimaryClick()
-                }
-
-                override fun onTick(tick: Long) {
-                    audioFab.updateAmplitude(recorder?.maxAmplitude)
-                }
-            }
-            timer?.start()
-        }
+    override fun onAutoRelease() {
+        tmpFile = audioFab.popRecording()
+        if (currentStrategy is RecStrategy)
+            currentStrategy?.onPrimaryClick()
     }
 
-    private fun stopRecording() {
-        if (isRecording) {
-            isRecording = false
-            audioFab.setIsRecording(false)
-            timer?.cancel()
-
-            recorder?.stop()
-            recorder?.release()
-            recorder = null
-        }
+    override fun onRelease() {
+        tmpFile = audioFab.popRecording()
     }
 
     fun persistRecording() = GlobalScope.launch {
@@ -370,6 +340,7 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
             val newFile = File(getFilepath(fileName))
             tmpFile?.copyTo(newFile, overwrite = true)
             tmpFile?.delete()
+            tmpFile = null
 
             val data = Note.NoteData(title = newFile.nameWithoutExtension,
                 text = newFile.name, pinned = false,
@@ -473,15 +444,14 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
         override fun getPrimaryDrawable() = resources.getDrawable(R.drawable.stop, theme)
         override fun isDismissible() = false
         override fun onBackPressed(): Boolean {
-            timer?.cancel()
+            audioFab.switchOff()
             tmpFile?.delete()
-            stopRecording()
+            tmpFile = null
             return super.onBackPressed()
         }
 
         override fun onPrimaryClick() {
-            timer?.cancel()
-            stopRecording()
+            audioFab.switchOff()
             expandEditText()
             pushStatus(STATUS_SAVE_REC)
         }
@@ -499,6 +469,7 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
 
         override fun onBackPressed(): Boolean {
             tmpFile?.delete()
+            tmpFile = null
             return super.onBackPressed()
         }
 
@@ -620,6 +591,7 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
         private fun removeNote(position : Int) {
             if (position < 0 || position > items.size) return
             val data = items[position].toData()
+            //TODO remove view and THEN remove data
             model.remove(data)
             if (data.isRecording) {
                 File(data.text).also {
@@ -843,7 +815,7 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, ItemTou
                 playerView.setContentUri(Uri.fromFile(file))
             }
 
-            playerView.setColorFilter(note.getTextColor())
+            playerView.setCassetteColor(note.getTextColor())
         }
     }
 

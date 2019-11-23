@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView android:gravity="start|top"
+    android:textCursorDrawable="@null"
+    android:textSize="@dimen/note_text_sp"
+    android:layout="@layout/edit_text_layout"
+    android:id="@+id/editText"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/bullet_point_et_margin"
+    android:ellipsize="end"
+    android:text=""
+    android:background="@null"
+    xmlns:android="http://schemas.android.com/apk/res/android" />
+
+<!-- android:layout_marginBottom="@dimen/bullet_point_et_margin" -->

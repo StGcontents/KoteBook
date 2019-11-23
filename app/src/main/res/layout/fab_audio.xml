@@ -24,7 +24,7 @@
         android:layout_width="@dimen/fab_size"
         android:layout_height="@dimen/fab_size" />
 
-    <com.stgi.kotebook.VisualizerView
+    <com.stgi.rodentia.VisualizerView
         android:id="@+id/visualizer"
         android:visibility="gone"
         android:padding="6dp"

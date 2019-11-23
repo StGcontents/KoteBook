@@ -1,29 +1,26 @@
 package com.stgi.kotebook
 
-import android.animation.Animator
-import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Color
-import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.Typeface
-import android.text.*
+import android.text.Editable
 import android.text.Layout.JUSTIFICATION_MODE_INTER_WORD
-import android.text.style.StrikethroughSpan
+import android.text.SpannableString
+import android.text.TextUtils
 import android.text.style.StyleSpan
 import android.util.AttributeSet
-import android.view.*
-import android.view.inputmethod.EditorInfo
-import android.widget.*
-import androidx.appcompat.view.menu.ActionMenuItemView
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.CompoundButton
+import android.widget.EditText
+import android.widget.LinearLayout
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
 import androidx.core.view.children
 import androidx.core.view.forEach
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import java.lang.StringBuilder
+import com.stgi.rodentia.R
 
 const val DOUBLE_ESCAPE = "\n\n"
 const val BULLET_POINT_EMPTY = '\u25E6'
@@ -50,14 +47,8 @@ class BulletPointTextEditor(context: Context, attrs: AttributeSet) : LinearLayou
             }
     }
 
-    //private val adapter: TextEditorAdapter
-
-
     init {
         orientation = VERTICAL
-        /*adapter = TextEditorAdapter()
-        adapter.setData(null)
-        layoutManager = LinearLayoutManager(context, VERTICAL, false)*/
     }
 
     private val textChunks = mutableListOf<String>()
@@ -75,7 +66,6 @@ class BulletPointTextEditor(context: Context, attrs: AttributeSet) : LinearLayou
         }
 
         textChunks.addAll(text!!.split(bulletPointSplit))
-        //adapter.setData(text!!.split(bulletPointSplit))
         textChunks.forEach { s ->
             when {
                 s.startsWith(BULLET_POINT_FULL) ->
@@ -148,8 +138,7 @@ class BulletPointTextEditor(context: Context, attrs: AttributeSet) : LinearLayou
         v.setOnFocusChangeListener(null)
         removeView(v)
         if (requestFocus) {
-            /*if (position <= 0) mainText.requestFocus()
-            else*/ getChildAt(position).requestFocus()
+            getChildAt(position).requestFocus()
         }
     }
 
@@ -221,74 +210,4 @@ class BulletPointTextEditor(context: Context, attrs: AttributeSet) : LinearLayou
             else i++
         }
     }
-
-    /*private inner class TextEditorAdapter: RecyclerView.Adapter<EditorViewHolder>() {
-        private val TYPE_BULLET = 0
-        private val TYPE_TEXT = 1
-
-        private var data: List<String> = arrayListOf("")
-
-        fun setData(newData: List<String>?) {
-            data = if (newData == null || newData.isEmpty()) arrayListOf("")
-                else newData
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EditorViewHolder {
-            val v: View
-            return if (viewType == TYPE_TEXT) {
-                v = (LayoutInflater.from(parent.context)
-                    .inflate(R.layout.edit_text_layout, parent, false) as EditText)
-                TextViewHolder(v)
-            } else {
-                v = BulletPointView(context, null)
-                BulletViewHolder(v)
-            }
-        }
-
-        override fun onBindViewHolder(holder: EditorViewHolder, position: Int) {
-            holder.bind(data[position])
-        }
-
-        override fun getItemCount() = data.size
-
-        override fun getItemViewType(position: Int) =
-            if (data[position].startsWith(BULLET_POINT_FULL) || data[position].startsWith(BULLET_POINT_EMPTY))
-                TYPE_BULLET else TYPE_TEXT
-    }
-
-    private abstract inner class EditorViewHolder(itemView: View): ViewHolder(itemView) {
-        abstract fun getView(): View
-        abstract fun bind(text: String)
-        fun String.trimSpaces() = trimStart { c -> c.isWhitespace() }.dropLastWhile { c -> c.isWhitespace() }.toString()
-    }
-
-    private inner class TextViewHolder(itemView: TextView): EditorViewHolder(itemView) {
-        init {
-            getView().onFocusChangeListener = focusChangeListener
-            val spannable = SpannableString(context.getString(R.string.insert_text))
-            spannable.setSpan(StyleSpan(Typeface.BOLD_ITALIC), 0, spannable.length, SpannableString.SPAN_INCLUSIVE_INCLUSIVE)
-            getView().hint = spannable
-            setEditTextColor(getView())
-            getView().justificationMode = JUSTIFICATION_MODE_INTER_WORD
-        }
-        override fun getView() = itemView as EditText
-
-        override fun bind(text: String) {
-            getView().setText(text.trimSpaces())
-        }
-    }
-
-    private inner class BulletViewHolder(itemView: BulletPointView): EditorViewHolder(itemView) {
-        init {
-            getView().addOrRemoveAdapter = this@BulletPointTextEditor
-            getView().setOnFocusChangeListener(focusChangeListener)
-            getView().setOnCheckedChangeListener(checkedChangeListener)
-        }
-        override fun getView() = itemView as BulletPointView
-        override fun bind(text: String) {
-            val edited = text.trimSpaces()
-            getView().setIsChecked(text.startsWith(BULLET_POINT_FULL))
-            getView().setText(edited.trim { c -> c == BULLET_POINT_EMPTY || c == BULLET_POINT_FULL })
-        }
-    }*/
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.stgi.kotebook.CassettePlayerView android:id="@+id/playerView"
+<com.stgi.rodentia.CassettePlayerView android:id="@+id/playerView"
     app:layout_constraintEnd_toEndOf="@+id/fakeView"
     app:layout_constraintStart_toStartOf="@+id/fakeView"
     app:layout_constraintBottom_toBottomOf="@+id/fakeView"

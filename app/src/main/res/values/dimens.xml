@@ -7,10 +7,6 @@
     <dimen name="secondary_fabs_height">80dp</dimen>
 
     <!-- Writing Fragment -->
-    <dimen name="bullet_point_start_padding">-6dp</dimen>
-    <dimen name="bullet_point_editor_top_margin">12sp</dimen>
-    <dimen name="bullet_point_editor_margin">16dp</dimen>
-    <dimen name="bullet_point_et_margin">4dp</dimen>
     <dimen name="writing_title_margin">16dp</dimen>
 
     <!-- Cards -->

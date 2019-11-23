@@ -25,6 +25,7 @@ import androidx.core.graphics.red
 import androidx.core.view.forEach
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import com.stgi.rodentia.CassettePlayerView
 import kotlinx.android.synthetic.main.fragment_edit.*
 import kotlinx.android.synthetic.main.fragment_edit.view.*
 import kotlinx.android.synthetic.main.layout_bullets_fab.view.*
@@ -686,7 +687,7 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
         override fun onCreateInternal(view: View) {
             view as ConstraintLayout
             val playerView = LayoutInflater.from(context).inflate(R.layout.layout_cassette, view, false) as CassettePlayerView
-            playerView.setColorFilter(note!!.getTextColor())
+            playerView.setCassetteColor(note!!.getTextColor())
             view.addView(playerView, view.indexOfChild(view.titleFrame) + 1)
         }
         override fun onStartingConstraintsSet(view: View) { }
@@ -734,7 +735,7 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
 
         override fun applyColors(view: View?) {
             super.applyColors(view)
-            view!!.playerView?.setColorFilter(note!!.getTextColor())
+            view!!.playerView?.setCassetteColor(note!!.getTextColor())
         }
 
         fun getFilepath(name: String?) = (activity as MainActivity).directory.absolutePath + "/" + name
@@ -865,41 +866,6 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
             if (dateTime < Date().time)
                 dateTime += 24L * 60L * 60L * 1000L
             Toast.makeText(context, "Alarm set to " + DateFormat.getInstance().format(Date(dateTime)), Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    inner class CalendarStrategy(context: MainActivity): MainActivity.OnClickStrategy(context) {
-        override fun getPrimaryDrawable() = resources.getDrawable(R.drawable.done, context.theme)
-        override fun getSecondaryDrawable() = resources.getDrawable(R.drawable.cancel, context.theme)
-
-        private val startingHour: Int = view!!.alarmButton.getHour()
-        private val startingMinute: Int = view!!.alarmButton.getMinute()
-
-        override fun initialize() {
-            super.initialize()
-            context.secondaryButton.visibility = View.VISIBLE
-            expandClock()
-        }
-
-        override fun onBackPressed(): Boolean {
-            view!!.alarmButton.setHour(startingHour)
-            view!!.alarmButton.setMinute(startingMinute)
-
-            context.secondaryButton.visibility = View.GONE
-            collapseClock()
-            context.pushStatus(STATUS_CONFIRM, ConfirmStrategy(context))
-            return false
-        }
-
-        override fun onPrimaryClick() {
-            Toast.makeText(context, view!!.alarmButton.getTimeMessage(), Toast.LENGTH_SHORT).show()
-            context.secondaryButton.visibility = View.GONE
-            collapseClock()
-            context.pushStatus(STATUS_CONFIRM, ConfirmStrategy(context))
-        }
-
-        override fun onSecondaryClick() {
-            activity?.onBackPressed()
         }
     }
 

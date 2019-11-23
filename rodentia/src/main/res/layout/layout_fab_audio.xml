@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:elevation="4dp">
+
+    <FrameLayout
+        android:orientation="horizontal"
+        android:id="@+id/leftGuides"
+        android:alpha="0.5"
+        android:rotation="180"
+        android:layout_gravity="center_vertical"
+        android:visibility="visible"
+        android:layout_marginEnd="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-8dp"
+            android:src="@drawable/swipe_right" />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/swipe_right" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+    <View
+        android:id="@+id/circlet"
+        android:layout_width="@dimen/fab_size"
+        android:layout_height="@dimen/fab_size"
+        android:background="@drawable/circle"
+        android:foreground="@android:color/transparent"
+        android:focusable="false"/>
+
+    <ImageButton
+        android:id="@+id/fab"
+        android:src="@drawable/mic"
+        android:background="@null"
+        android:foreground="@drawable/circular_ripple"
+        android:layout_width="@dimen/fab_size"
+        android:layout_height="@dimen/fab_size"/>
+
+    <com.stgi.rodentia.VisualizerView
+        android:id="@+id/visualizer"
+        android:visibility="gone"
+        android:padding="6dp"
+        android:layout_width="@dimen/fab_size"
+        android:layout_height="@dimen/fab_size"/>
+    </FrameLayout>
+
+    <FrameLayout
+        android:orientation="horizontal"
+        android:id="@+id/rightGuides"
+        android:alpha="0.5"
+        android:layout_marginStart="4dp"
+        android:visibility="visible"
+        android:layout_gravity="center_vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/circlet">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-8dp"
+            android:src="@drawable/swipe_right" />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/swipe_right" />
+    </FrameLayout>
+
+</LinearLayout>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="CassettePlayerView" >
+        <attr name="cassetteColor" format="color" />
+    </declare-styleable>
+
+    <declare-styleable name="SwipeButton" >
+        <attr name="defaultSrc" format="reference" />
+        <attr name="swipedSrc" format="reference" />
+
+        <attr name="maxDuration" format="integer"/>
+        <attr name="indefinite" format="boolean"/>
+
+        <attr name="thresholdSignal" format="integer">
+            <enum name="vibration" value="0" />
+            <enum name="none" value="1" />
+        </attr>
+
+        <attr name="threshold" format="dimension"/>
+        <attr name="thresholdSensitivity" format="dimension"/>
+
+        <attr name="swipeDirection" format="enum">
+            <enum name="left" value="-1" />
+            <enum name="right" value="1" />
+        </attr>
+    </declare-styleable>
+
+</resources>

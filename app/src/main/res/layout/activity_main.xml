@@ -47,11 +47,15 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent"/>
 
-    <com.stgi.kotebook.RecordingFloatingActionButton
+    <com.stgi.rodentia.RecordingSwipeButton
         android:id="@+id/audioFab"
         app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
-        app:layout_anchorGravity="bottom|left|start"
+        app:layout_anchorGravity="bottom"
         app:layout_anchor="@id/notesRecycler"
+        app:defaultSrc="@drawable/mic"
+        app:swipeDirection="right"
+        app:thresholdSignal="vibration"
+        android:padding="16dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

@@ -16,13 +16,20 @@ import android.view.inputmethod.EditorInfo
 import android.widget.*
 import android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import com.stgi.rodentia.R
 
 
-
-class BulletPointView(context: Context, attrs: AttributeSet?, private val isInteractive: Boolean = true) : LinearLayout(context, attrs) {
+class BulletPointView(context: Context, attrs: AttributeSet?) : LinearLayout(context, attrs) {
     val cb: CheckBox
     private val et: EditText?
     private val tv: TextView?
+    private var isInteractive: Boolean = true
+
+    constructor(context: Context, attrs: AttributeSet?, isInteractive: Boolean = true):
+            this(context, attrs) {
+        this.isInteractive = isInteractive
+        applyIsInteractive()
+    }
 
     private fun applyIsInteractive(allowCheckBox: Boolean = true) {
         isClickable = isInteractive || allowCheckBox
@@ -210,14 +217,11 @@ class BulletPointView(context: Context, attrs: AttributeSet?, private val isInte
                 KeyEvent.KEYCODE_ENTER -> {
                     if (v.text.isNotEmpty())
                         addOrRemoveAdapter?.addAfter(this@BulletPointView)
-                    //removeBulletPoint(this@BulletPointView)
-                    //addBulletPoint(position = indexOfChild(v.parent as View) + 1)
                     return true
                 }
                 KeyEvent.KEYCODE_DEL, KeyEvent.KEYCODE_FORWARD_DEL -> {
                     if (v.text.isEmpty()) {
                         addOrRemoveAdapter?.remove(this@BulletPointView)
-                        //removeBulletPoint(this@BulletPointView)
                         return true
                     }
                 }
@@ -231,7 +235,6 @@ class BulletPointView(context: Context, attrs: AttributeSet?, private val isInte
                 EditorInfo.IME_ACTION_DONE, EditorInfo.IME_ACTION_NEXT -> {
                     if (v.text.isNotEmpty())
                         addOrRemoveAdapter?.addAfter(this@BulletPointView)
-                    //addBulletPoint(position = indexOfChild(v.parent as View) + 1)
                     return true
                 }
             }
@@ -239,13 +242,11 @@ class BulletPointView(context: Context, attrs: AttributeSet?, private val isInte
                 KeyEvent.KEYCODE_ENTER -> {
                     if (v.text.isNotEmpty())
                         addOrRemoveAdapter?.addAfter(this@BulletPointView)
-                    //addBulletPoint(position = indexOfChild(v.parent as View) + 1)
                     return true
                 }
                 KeyEvent.KEYCODE_DEL, KeyEvent.KEYCODE_FORWARD_DEL -> {
                     if (v.text.isEmpty()) {
                         addOrRemoveAdapter?.remove(this@BulletPointView)
-                        //removeBulletPoint(this@BulletPointView)
                         return true
                     }
                 }
@@ -261,7 +262,6 @@ class BulletPointView(context: Context, attrs: AttributeSet?, private val isInte
             v as EditText
             if (!hasFocus && v.text.trimSpaces().isEmpty()) {
                 addOrRemoveAdapter?.remove(this@BulletPointView, false)
-                //removeBulletPoint(this@BulletPointView, false)
             }
         }
     }
