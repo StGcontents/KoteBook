@@ -15,7 +15,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <com.stgi.kotebook.BulletPointTextEditor
+    <com.stgi.rodentia.BulletPointTextEditor
         android:orientation="vertical"
         android:id="@+id/bulletPointEditor"
         android:layout_width="match_parent"

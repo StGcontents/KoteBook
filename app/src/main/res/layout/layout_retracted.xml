@@ -30,7 +30,7 @@
         android:gravity="center_vertical"
         android:visibility="gone">
 
-        <com.stgi.kotebook.BulletPointTextEditor
+        <com.stgi.rodentia.BulletPointTextEditor
             android:id="@+id/inputText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

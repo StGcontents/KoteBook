@@ -1,12 +1,14 @@
-package com.stgi.kotebook
+package com.stgi.rodentia
 
 import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.Context
-import android.graphics.Paint
+import android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
 import android.graphics.PorterDuff
 import android.graphics.Rect
-import android.text.*
+import android.text.Editable
+import android.text.Spanned
+import android.text.TextWatcher
 import android.text.style.StrikethroughSpan
 import android.util.AttributeSet
 import android.view.KeyEvent
@@ -14,26 +16,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.*
-import android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import com.stgi.rodentia.R
 
 
-class BulletPointView(context: Context, attrs: AttributeSet?) : LinearLayout(context, attrs) {
+class BulletPointView(context: Context, attrs: AttributeSet?, private val isInteractive: Boolean = true) : LinearLayout(context, attrs) {
     val cb: CheckBox
     private val et: EditText?
     private val tv: TextView?
-    private var isInteractive: Boolean = true
-
-    constructor(context: Context, attrs: AttributeSet?, isInteractive: Boolean = true):
-            this(context, attrs) {
-        this.isInteractive = isInteractive
-        applyIsInteractive()
-    }
 
     private fun applyIsInteractive(allowCheckBox: Boolean = true) {
-        isClickable = isInteractive || allowCheckBox
-        isEnabled = isInteractive
+        cb.isClickable = isInteractive || allowCheckBox
+        cb.isLongClickable = isInteractive || allowCheckBox
+
+        cb.isEnabled = isInteractive || allowCheckBox
+        et?.isEnabled = isInteractive
 
         et?.isFocusable = isInteractive
         et?.isFocusableInTouchMode = isInteractive
@@ -50,16 +45,6 @@ class BulletPointView(context: Context, attrs: AttributeSet?) : LinearLayout(con
     fun setOnCheckedChangeListener(l: CompoundButton.OnCheckedChangeListener?) {
         onCheckedChangeListener = OnCheckedChangedListener(l)
         cb.setOnCheckedChangeListener(onCheckedChangeListener)
-    }
-
-    override fun setClickable(clickable: Boolean) {
-        cb.isClickable = clickable
-        cb.isLongClickable = clickable
-    }
-
-    override fun setEnabled(enabled: Boolean) {
-        cb.isEnabled = cb.isClickable
-        et?.isEnabled = enabled
     }
 
     fun setMaxLines(lines: Int) {
@@ -119,7 +104,6 @@ class BulletPointView(context: Context, attrs: AttributeSet?) : LinearLayout(con
 
     init {
         setPadding(context.resources.getDimension(R.dimen.bullet_point_start_padding).toInt(), 0, 0, 0)
-        isFocusable = false
 
         cb = LayoutInflater.from(context).inflate(R.layout.bullet_point_checkbox, this, false) as CheckBox
         if (isInteractive) {

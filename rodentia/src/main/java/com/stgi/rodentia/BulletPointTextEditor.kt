@@ -1,4 +1,4 @@
-package com.stgi.kotebook
+package com.stgi.rodentia
 
 import android.content.Context
 import android.graphics.Color
@@ -20,7 +20,6 @@ import androidx.core.graphics.green
 import androidx.core.graphics.red
 import androidx.core.view.children
 import androidx.core.view.forEach
-import com.stgi.rodentia.R
 
 const val DOUBLE_ESCAPE = "\n\n"
 const val BULLET_POINT_EMPTY = '\u25E6'

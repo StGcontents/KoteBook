@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="visualizer_item_size">2dp</dimen>
-    <dimen name="note_text_sp">16dp</dimen>
+    <dimen name="note_text_sp">16sp</dimen>
 
     <dimen name="bullet_point_start_padding">-6dp</dimen>
     <dimen name="bullet_point_editor_top_margin">12sp</dimen>

@@ -5,12 +5,14 @@ import android.annotation.SuppressLint
 import android.graphics.PorterDuff
 import android.net.Uri
 import android.view.*
-import android.widget.*
+import android.widget.CheckBox
+import android.widget.CompoundButton
+import android.widget.ImageButton
+import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.stgi.rodentia.CassettePlayerView
-import kotlinx.android.synthetic.main.note_card.view.*
+import com.stgi.rodentia.*
 import kotlinx.android.synthetic.main.note_card_audio.view.*
 import kotlinx.android.synthetic.main.note_card_bulleted.view.*
 import java.io.File
@@ -183,7 +185,7 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NotesViewHolder>(), View.
             if (v is ImageButton) {
                 return false
             }
-            if (v is ImageView || (v is CheckBox && v.isClickable)) {
+            if (v is CheckBox && v.isClickable) {
                 return true
             }
             detector.onTouchEvent(ev)
