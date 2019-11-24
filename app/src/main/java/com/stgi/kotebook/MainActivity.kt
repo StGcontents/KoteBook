@@ -4,18 +4,14 @@ import android.Manifest
 import android.animation.Animator
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.TransitionDrawable
-import android.media.AudioRouting
-import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Bundle
-import android.os.CountDownTimer
 import android.os.Environment
 import android.os.PersistableBundle
 import android.text.TextUtils
@@ -61,15 +57,15 @@ private const val DURATION = 150L
 
 const val LAST_STATUS = "currentStatus"
 
-const val STATUS_INIT = 0
-private const val STATUS_ANNOTATE = 1
-private const val STATUS_VERTICAL = 2
-private const val STATUS_RECORDING = 3
-private const val STATUS_SAVE_REC = 4
-const val STATUS_EDIT = 5
-const val STATUS_CONFIRM = 6
-const val STATUS_CLOCK = 7
-const val STATUS_CALENDAR = 8
+const val STATUS_INIT = 1
+private const val STATUS_ANNOTATE = 2
+private const val STATUS_RECORDING = 4
+private const val STATUS_SAVE_REC = 8
+const val STATUS_EDIT = 16
+const val STATUS_CONFIRM = 32
+const val STATUS_CLOCK = 64
+
+const val REC_HIDDEN_FLAGS = STATUS_ANNOTATE + STATUS_SAVE_REC + STATUS_EDIT + STATUS_CONFIRM + STATUS_CLOCK
 
 private const val NOTE_TYPE_AUDIO = R.layout.note_card_audio
 private const val NOTE_TYPE_BASE = R.layout.note_card
@@ -205,13 +201,28 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, SwipeBu
                     ?.sortedWith(compareBy({ !it.pinned }, { it.id })))
             })
 
-        pushStatus(getPreferences(Context.MODE_PRIVATE).getInt(LAST_STATUS, STATUS_INIT))
+        getPreferences(Context.MODE_PRIVATE).getInt(LAST_STATUS, STATUS_INIT).apply {
+            if (this and REC_HIDDEN_FLAGS == this) {
+                audioFab.hide()
+            } else {
+                audioFab.show()
+            }
+            pushStatus(this)
+        }
     }
 
     override fun onPause() {
         super.onPause()
         model.notes.removeObservers(this)
         currentStrategy?.persistStatus()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        getPreferences(Context.MODE_PRIVATE).edit().apply {
+            remove(LAST_STATUS)
+            apply()
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
@@ -266,8 +277,13 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, SwipeBu
     }
 
     fun View.hide() {
-        animate().cancel()
-        animate().translationY(height.toFloat()).start()
+        post {
+            animate().cancel()
+            animate().apply {
+                translationY(height.toFloat())
+                start()
+            }
+        }
     }
 
     fun View.show() {

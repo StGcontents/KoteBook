@@ -90,31 +90,45 @@ class ClockButton(context: Context, attributeSet: AttributeSet?): ConstraintLayo
         clock.isEnabled = false
     }
 
-    fun showAmPmButton() {
-        amPmButton.apply {
-            alpha = 0f
-            visibility = View.VISIBLE
+    fun showAmPmButton(immediate: Boolean = false) {
+        if (immediate) {
+            amPmButton.apply {
+                alpha = 1f
+                visibility = View.VISIBLE
+            }
+        } else {
+            amPmButton.apply {
+                alpha = 0f
+                visibility = View.VISIBLE
 
-            animate().apply {
-                cancel()
-                alpha(1f)
-                duration = 150L
-                start()
+                animate().apply {
+                    cancel()
+                    alpha(1f)
+                    duration = 150L
+                    start()
+                }
             }
         }
     }
 
-    fun hideAmPmButton() {
-        amPmButton.apply {
-            alpha = 1f
-            visibility = View.VISIBLE
+    fun hideAmPmButton(immediate: Boolean = false) {
+        if (immediate) {
+            amPmButton.apply {
+                alpha = 0f
+                visibility = View.GONE
+            }
+        } else {
+            amPmButton.apply {
+                alpha = 1f
+                visibility = View.VISIBLE
 
-            animate().apply {
-                cancel()
-                alpha(0f)
-                duration = 150L
-                withEndAction { amPmButton.visibility = View.GONE }
-                start()
+                animate().apply {
+                    cancel()
+                    alpha(0f)
+                    duration = 150L
+                    withEndAction { amPmButton.visibility = View.GONE }
+                    start()
+                }
             }
         }
     }

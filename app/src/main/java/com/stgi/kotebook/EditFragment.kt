@@ -155,17 +155,44 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
                 })
             }
         } else {
-            populateWithPalette(view, currentSet)
-            (view.fakeView.background as TransitionDrawable).apply {
-                resetTransition()
-                startTransition(0)
-            }
             view.post {
-                context
+                populateWithPalette(view, currentSet)
+                (view.fakeView.background as TransitionDrawable).apply {
+                    resetTransition()
+                    startTransition(0)
+                }
+
+                currentSet?.applyTo(view)
+
                 onStartingConstraintsSet(view)
                 onFinalConstraintsSet(view)
+
+                if (isClockExpanded) {
+                    view.alarmButton?.asClock()
+                    view.datePickerMask?.setOnClickListener {
+                        slideCalendarIn()
+                    }
+                    view.clockMask.visibility = View.VISIBLE
+                    view.clockMask.alpha = 1f
+
+                    if (isCalendarOnForeground) {
+                        view.alarmButton?.asButton()
+                        view.datePickerMask?.setOnClickListener(null)
+                        view.datePicker?.visibility = View.VISIBLE
+                        view.datePickerMask?.visibility = View.INVISIBLE
+                    } else {
+                        view.alarmButton?.asClock()
+                        view.datePickerMask?.setOnClickListener {
+                            slideCalendarIn()
+                        }
+                        view.datePicker?.visibility = View.GONE
+                        view.datePickerMask?.visibility = View.VISIBLE
+                    }
+                } else {
+                    view.alarmButton?.asButton()
+                }
+
                 view.titleEt.setText(note!!.title)
-                currentSet?.applyTo(view)
             }
         }
 
@@ -194,14 +221,16 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
                                 PorterDuff.Mode.SRC_ATOP
                             )
                             it.elevation = resources.getDimension(R.dimen.small_fab_elevation)
+                            val size = resources.getDimensionPixelSize(R.dimen.small_fab_size)
+                            it.layoutParams = ConstraintLayout.LayoutParams(size, size)
                         }
 
                         paletteItem.setOnClickListener(this)
                         paletteItem.setOnTouchListener(this)
                         view.addView(paletteItem)
 
-                        set?.constrainHeight(paletteItem.id, 0)
-                        set?.constrainWidth(paletteItem.id, 0)
+                        //startingSet?.constrainCircle(paletteItem.id, view.paintButton.id, 0, 0f)
+                        //currentSet?.constrainCircle(paletteItem.id, view.paintButton.id, 0, 0f)
                         set?.constrainCircle(paletteItem.id, view.paintButton.id, 0, 0f)
                     }
             }
@@ -291,50 +320,66 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
         animator.start()
     }
 
+    private var areButtonsExpanded: Boolean = false
+
     private fun expandButtons(duration: Long = 100L) {
-        TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().setDuration(duration))
-        val set = ConstraintSet()
-        set.clone(getConstraintLayout())
+        if (!areButtonsExpanded) {
+            areButtonsExpanded = true
+            TransitionManager.beginDelayedTransition(
+                getConstraintLayout(),
+                ChangeBounds().setDuration(duration)
+            )
+            val set = ConstraintSet()
+            set.clone(getConstraintLayout())
 
-        expandButtonsInternal(set)
+            expandButtonsInternal(set)
 
-        set.connect(paintButton.id, START, PARENT_ID, START)
-        set.clear(paintButton.id, END)
-        set.connect(
+            set.connect(paintButton.id, START, PARENT_ID, START)
+            set.clear(paintButton.id, END)
+            set.connect(
                 paintButton.id,
                 START,
                 PARENT_ID,
                 START,
                 resources.getDimension(R.dimen.default_margin).toInt()
             )
-        set.applyTo(getConstraintLayout())
-        currentSet = set
+            set.applyTo(getConstraintLayout())
+            currentSet = set
+        }
     }
 
     abstract fun expandButtonsInternal(set: ConstraintSet)
 
     private fun collapseButtons(duration: Long = 100L) {
-        hidePalette()
+        if (areButtonsExpanded) {
+            areButtonsExpanded = false
+            hidePalette()
 
-        TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().setDuration(duration))
-        val set = ConstraintSet()
-        set.clone(getConstraintLayout())
+            TransitionManager.beginDelayedTransition(
+                getConstraintLayout(),
+                ChangeBounds().setDuration(duration)
+            )
+            val set = ConstraintSet()
+            set.clone(getConstraintLayout())
 
-        collapseButtonsInternal(set)
+            collapseButtonsInternal(set)
 
-        set.clear(paintButton.id, START)
-        set.connect(
+            set.clear(paintButton.id, START)
+            set.connect(
                 paintButton.id,
                 END,
                 PARENT_ID,
                 START,
                 resources.getDimension(R.dimen.default_margin).toInt()
             )
-        set.applyTo(getConstraintLayout())
-        currentSet = set
+            set.applyTo(getConstraintLayout())
+            currentSet = set
+        }
     }
 
     abstract fun collapseButtonsInternal(set: ConstraintSet)
+
+    private var isClockExpanded: Boolean = false
 
     fun expandClock() {
         view?.alarmButton?.asClock()
@@ -342,32 +387,34 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
             slideCalendarIn()
         }
 
-        val set = ConstraintSet()
-        set.clone(getConstraintLayout())
+        if (!isClockExpanded) {
+            isClockExpanded = true
+            val set = ConstraintSet()
+            set.clone(getConstraintLayout())
 
-        set.constrainWidth(
+            set.constrainWidth(
                 view!!.alarmButton.id,
                 resources.getDimension(R.dimen.bigger_play_button_size).toInt()
             )
-        set.constrainHeight(
+            set.constrainHeight(
                 view!!.alarmButton.id,
                 resources.getDimension(R.dimen.bigger_play_button_size).toInt()
             )
-        set.connect(view!!.alarmButton.id, TOP)
-        set.connect(view!!.alarmButton.id, BOTTOM)
-        set.connect(view!!.alarmButton.id, START)
-        set.connect(view!!.alarmButton.id, END)
+            set.connect(view!!.alarmButton.id, TOP)
+            set.connect(view!!.alarmButton.id, BOTTOM)
+            set.connect(view!!.alarmButton.id, START)
+            set.connect(view!!.alarmButton.id, END)
 
-        set.constrainWidth(
+            set.constrainWidth(
                 view!!.datePickerMask.id,
                 resources.getDimension(R.dimen.fab_size).toInt()
             )
-        set.constrainHeight(
+            set.constrainHeight(
                 view!!.datePickerMask.id,
                 resources.getDimension(R.dimen.fab_size).toInt()
             )
-        set.clear(view!!.datePickerMask.id, START)
-        set.connect(view!!.datePickerMask.id, END, view!!.leftGuideline.id, END, 0)
+            set.clear(view!!.datePickerMask.id, START)
+            set.connect(view!!.datePickerMask.id, END, view!!.leftGuideline.id, END, 0)
 
             TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().apply {
                 duration = 150L
@@ -384,81 +431,140 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
                     }
                 }))
             })
-        set.applyTo(getConstraintLayout())
-        currentSet = set
+            set.applyTo(getConstraintLayout())
+            currentSet = set
+        }
     }
 
     fun collapseClock() {
         view?.alarmButton?.asButton()
 
-        val set = ConstraintSet()
-        set.clone(getConstraintLayout())
+        if (isClockExpanded) {
+            isClockExpanded = false
 
-        set.constrainWidth(view!!.alarmButton.id, resources.getDimension(R.dimen.fab_size).toInt())
-        set.constrainHeight(view!!.alarmButton.id, resources.getDimension(R.dimen.fab_size).toInt())
-        set.clear(view!!.alarmButton.id, TOP)
-        set.clear(view!!.alarmButton.id, START)
-        set.connect(view!!.alarmButton.id, END, PARENT_ID, END, resources.getDimension(R.dimen.fab_margin).toInt())
-        if (this is WritingFragment)
-            set.connect( view!!.alarmButton.id, BOTTOM, view!!.bulletsButton.id, TOP, resources.getDimension(R.dimen.fab_margin).toInt())
-        else
-            set.connect(view!!.alarmButton.id, BOTTOM, PARENT_ID, BOTTOM, resources.getDimension(R.dimen.secondary_fabs_height).toInt())
+            val set = ConstraintSet()
+            set.clone(getConstraintLayout())
 
-        set.constrainWidth(view!!.datePickerMask.id, resources.getDimension(R.dimen.fab_size).toInt())
-        set.constrainHeight(view!!.datePickerMask.id, resources.getDimension(R.dimen.fab_size).toInt())
-        set.clear(view!!.datePickerMask.id, START)
-        set.connect(view!!.datePickerMask.id, END, PARENT_ID, START, resources.getDimension(R.dimen.fab_margin).toInt())
-        set.connect(view!!.datePickerMask.id, TOP, PARENT_ID, TOP)
-        set.connect(view!!.datePickerMask.id, BOTTOM, PARENT_ID, BOTTOM)
+            set.constrainWidth(
+                view!!.alarmButton.id,
+                resources.getDimension(R.dimen.fab_size).toInt()
+            )
+            set.constrainHeight(
+                view!!.alarmButton.id,
+                resources.getDimension(R.dimen.fab_size).toInt()
+            )
+            set.clear(view!!.alarmButton.id, TOP)
+            set.clear(view!!.alarmButton.id, START)
+            set.connect(
+                view!!.alarmButton.id,
+                END,
+                PARENT_ID,
+                END,
+                resources.getDimension(R.dimen.fab_margin).toInt()
+            )
+            if (this is WritingFragment)
+                set.connect(
+                    view!!.alarmButton.id,
+                    BOTTOM,
+                    view!!.bulletsButton.id,
+                    TOP,
+                    resources.getDimension(R.dimen.fab_margin).toInt()
+                )
+            else
+                set.connect(
+                    view!!.alarmButton.id,
+                    BOTTOM,
+                    PARENT_ID,
+                    BOTTOM,
+                    resources.getDimension(R.dimen.secondary_fabs_height).toInt()
+                )
 
-        TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().apply {
-            duration = 150L
-            addListener(StartToFinishTaskListener(startTask = Runnable {
-                view?.datePicker?.visibility = View.GONE
-                view?.datePickerMask?.visibility = View.VISIBLE
-                view!!.alarmButton.hideAmPmButton()
-                view!!.clockMask.animate().apply {
-                    cancel()
-                    alpha(0f)
-                    duration = 150L
-                    withEndAction { view!!.clockMask.visibility = View.GONE }
-                    start()
-                }
-            }))
-        })
-        set.applyTo(getConstraintLayout())
-        currentSet = set
+            set.constrainWidth(
+                view!!.datePickerMask.id,
+                resources.getDimension(R.dimen.fab_size).toInt()
+            )
+            set.constrainHeight(
+                view!!.datePickerMask.id,
+                resources.getDimension(R.dimen.fab_size).toInt()
+            )
+            set.clear(view!!.datePickerMask.id, START)
+            set.connect(
+                view!!.datePickerMask.id,
+                END,
+                PARENT_ID,
+                START,
+                resources.getDimension(R.dimen.fab_margin).toInt()
+            )
+            set.connect(view!!.datePickerMask.id, TOP, PARENT_ID, TOP)
+            set.connect(view!!.datePickerMask.id, BOTTOM, PARENT_ID, BOTTOM)
+
+            TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().apply {
+                duration = 150L
+                addListener(StartToFinishTaskListener(startTask = Runnable {
+                    view?.datePicker?.visibility = View.GONE
+                    view?.datePickerMask?.visibility = View.VISIBLE
+                    view!!.alarmButton.hideAmPmButton()
+                    view!!.clockMask.animate().apply {
+                        cancel()
+                        alpha(0f)
+                        duration = 150L
+                        withEndAction { view!!.clockMask.visibility = View.GONE }
+                        start()
+                    }
+                }))
+            })
+            set.applyTo(getConstraintLayout())
+            currentSet = set
+        }
     }
+
+    private var isCalendarOnForeground = false
 
     fun slideCalendarIn() {
         view?.alarmButton?.asButton()
         view?.datePickerMask?.setOnClickListener(null)
         view?.datePicker?.visibility = View.INVISIBLE
 
-        val set = ConstraintSet()
-        set.clone(getConstraintLayout())
+        if (!isCalendarOnForeground) {
+            isCalendarOnForeground = true
 
-        set.constrainWidth(view!!.alarmButton.id, resources.getDimension(R.dimen.fab_size).toInt())
-        set.constrainHeight(view!!.alarmButton.id, resources.getDimension(R.dimen.fab_size).toInt())
-        set.clear(view!!.alarmButton.id, END)
-        set.connect(view!!.alarmButton.id, START, view!!.rightGuideline.id, START)
+            val set = ConstraintSet()
+            set.clone(getConstraintLayout())
 
-        set.constrainWidth(view!!.datePickerMask.id, resources.getDimension(R.dimen.no_dimen).toInt())
-        set.constrainHeight(view!!.datePickerMask.id, resources.getDimension(R.dimen.no_dimen).toInt())
-        set.connect(view!!.datePickerMask.id, START, view!!.datePicker.id, START)
-        set.connect(view!!.datePickerMask.id, END, view!!.datePicker.id, END, 0)
-        set.connect(view!!.datePickerMask.id, TOP, view!!.datePicker.id, TOP)
-        set.connect(view!!.datePickerMask.id, BOTTOM, view!!.datePicker.id, BOTTOM)
+            set.constrainWidth(
+                view!!.alarmButton.id,
+                resources.getDimension(R.dimen.fab_size).toInt()
+            )
+            set.constrainHeight(
+                view!!.alarmButton.id,
+                resources.getDimension(R.dimen.fab_size).toInt()
+            )
+            set.clear(view!!.alarmButton.id, END)
+            set.connect(view!!.alarmButton.id, START, view!!.rightGuideline.id, START)
 
-        TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().apply {
-            duration = 150L
-            addListener(StartToFinishTaskListener(endTask = Runnable {
-                view?.datePicker?.visibility = View.VISIBLE
-                view?.datePickerMask?.visibility = View.INVISIBLE
-            }))
-        })
-        set.applyTo(getConstraintLayout())
-        currentSet = set
+            set.constrainWidth(
+                view!!.datePickerMask.id,
+                resources.getDimension(R.dimen.no_dimen).toInt()
+            )
+            set.constrainHeight(
+                view!!.datePickerMask.id,
+                resources.getDimension(R.dimen.no_dimen).toInt()
+            )
+            set.connect(view!!.datePickerMask.id, START, view!!.datePicker.id, START)
+            set.connect(view!!.datePickerMask.id, END, view!!.datePicker.id, END, 0)
+            set.connect(view!!.datePickerMask.id, TOP, view!!.datePicker.id, TOP)
+            set.connect(view!!.datePickerMask.id, BOTTOM, view!!.datePicker.id, BOTTOM)
+
+            TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().apply {
+                duration = 150L
+                addListener(StartToFinishTaskListener(endTask = Runnable {
+                    view?.datePicker?.visibility = View.VISIBLE
+                    view?.datePickerMask?.visibility = View.INVISIBLE
+                }))
+            })
+            set.applyTo(getConstraintLayout())
+            currentSet = set
+        }
     }
 
     fun slideCalendarOut() {
@@ -467,30 +573,46 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
             slideCalendarIn()
         }
 
-        val set = ConstraintSet()
-        set.clone(getConstraintLayout())
+        if (isCalendarOnForeground) {
+            isCalendarOnForeground = false
 
-        set.constrainWidth(view!!.alarmButton.id, resources.getDimension(R.dimen.bigger_play_button_size).toInt())
-        set.constrainHeight(view!!.alarmButton.id, resources.getDimension(R.dimen.bigger_play_button_size).toInt())
-        set.connect(view!!.alarmButton.id, START, PARENT_ID, START)
-        set.connect(view!!.alarmButton.id, END, PARENT_ID, END)
+            val set = ConstraintSet()
+            set.clone(getConstraintLayout())
 
-        set.constrainWidth(view!!.datePickerMask.id, resources.getDimension(R.dimen.fab_size).toInt())
-        set.constrainHeight(view!!.datePickerMask.id, resources.getDimension(R.dimen.fab_size).toInt())
-        set.clear(view!!.datePickerMask.id, START)
-        set.connect(view!!.datePickerMask.id, TOP, PARENT_ID, TOP)
-        set.connect(view!!.datePickerMask.id, BOTTOM, PARENT_ID, BOTTOM)
-        set.connect(view!!.datePickerMask.id, END, view!!.leftGuideline.id, END, 0)
+            set.constrainWidth(
+                view!!.alarmButton.id,
+                resources.getDimension(R.dimen.bigger_play_button_size).toInt()
+            )
+            set.constrainHeight(
+                view!!.alarmButton.id,
+                resources.getDimension(R.dimen.bigger_play_button_size).toInt()
+            )
+            set.connect(view!!.alarmButton.id, START, PARENT_ID, START)
+            set.connect(view!!.alarmButton.id, END, PARENT_ID, END)
 
-        TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().apply {
-            duration = 150L
-            addListener(StartToFinishTaskListener(startTask = Runnable {
-                view?.datePicker?.visibility = View.INVISIBLE
-                view?.datePickerMask?.visibility = View.VISIBLE
-            }, endTask = Runnable { view!!.datePicker.visibility = View.GONE }))
-        })
-        set.applyTo(getConstraintLayout())
-        currentSet = set
+            set.constrainWidth(
+                view!!.datePickerMask.id,
+                resources.getDimension(R.dimen.fab_size).toInt()
+            )
+            set.constrainHeight(
+                view!!.datePickerMask.id,
+                resources.getDimension(R.dimen.fab_size).toInt()
+            )
+            set.clear(view!!.datePickerMask.id, START)
+            set.connect(view!!.datePickerMask.id, TOP, PARENT_ID, TOP)
+            set.connect(view!!.datePickerMask.id, BOTTOM, PARENT_ID, BOTTOM)
+            set.connect(view!!.datePickerMask.id, END, view!!.leftGuideline.id, END, 0)
+
+            TransitionManager.beginDelayedTransition(getConstraintLayout(), ChangeBounds().apply {
+                duration = 150L
+                addListener(StartToFinishTaskListener(startTask = Runnable {
+                    view?.datePicker?.visibility = View.INVISIBLE
+                    view?.datePickerMask?.visibility = View.VISIBLE
+                }, endTask = Runnable { view!!.datePicker.visibility = View.GONE }))
+            })
+            set.applyTo(getConstraintLayout())
+            currentSet = set
+        }
     }
 
     protected fun hidePalette(view: View? = getView()) {
@@ -568,24 +690,28 @@ abstract class EditFragment : Fragment(), View.OnClickListener, View.OnTouchList
     }
 
     private fun openEditing(): Boolean {
-        isEditing = true
-        expandButtons()
-        openEditingInternal()
+        if (!isEditing) {
+            isEditing = true
+            expandButtons()
+            openEditingInternal()
+        }
         return false
     }
 
     abstract fun openEditingInternal()
 
     private fun closeEditing(saveEdits : Boolean = true) {
-        isEditing = false
-        titleEt.clearFocus()
-        hidePalette()
-        val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(view?.windowToken, 0)
+        if (isEditing) {
+            isEditing = false
+            titleEt.clearFocus()
+            hidePalette()
+            val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(view?.windowToken, 0)
 
-        closeEditingInternal(saveEdits)
+            closeEditingInternal(saveEdits)
 
-        collapseButtons()
+            collapseButtons()
+        }
     }
 
     abstract fun closeEditingInternal(saveEdits: Boolean)
