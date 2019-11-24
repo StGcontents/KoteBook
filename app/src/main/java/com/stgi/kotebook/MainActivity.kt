@@ -4,6 +4,7 @@ import android.Manifest
 import android.animation.Animator
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color
@@ -16,6 +17,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Environment
+import android.os.PersistableBundle
 import android.text.TextUtils
 import android.view.*
 import android.view.inputmethod.InputMethodManager
@@ -27,6 +29,7 @@ import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
 import androidx.core.view.children
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DiffUtil
@@ -55,6 +58,8 @@ import kotlin.collections.ArrayList
 import kotlin.random.Random
 
 private const val DURATION = 150L
+
+const val LAST_STATUS = "currentStatus"
 
 const val STATUS_INIT = 0
 private const val STATUS_ANNOTATE = 1
@@ -131,18 +136,14 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, SwipeBu
         ViewModelProviders.of(this)[NotesModel::class.java]
     }
 
-    var recorder: MediaRecorder? = null
     var tmpFile: File? = null
-    private var isRecording: Boolean = false
-    var timer: CountDownTimer? = null
-
 
     val directory = File(Environment.getExternalStorageDirectory().absolutePath + DIRECTORY).also {
         if (!it.exists())
             it.mkdirs()
     }
 
-    fun filterNotes() = GlobalScope.launch {
+    private fun filterNotes() = GlobalScope.launch {
         val iterator = model.getAll().iterator()
         while (iterator.hasNext()) {
             val data = iterator.next()
@@ -160,8 +161,6 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, SwipeBu
         rootLayout.setOnTouchListener(dismissInputListener)
         writingFrame.setOnTouchListener { _, _ -> false }
         bgView.setOnTouchListener { _, _ -> true }
-
-        pushStatus(STATUS_INIT)
 
         inputText.setTextColor(Color.WHITE)
 
@@ -195,7 +194,6 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, SwipeBu
             override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) { }
         })
 
-        //audioFab.setSwipeAdapter(this)
         audioFab.setOnSwipeListener(this)
     }
 
@@ -206,11 +204,24 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, SwipeBu
                 adapter.setData(t?.map { Note(it) }
                     ?.sortedWith(compareBy({ !it.pinned }, { it.id })))
             })
+
+        pushStatus(getPreferences(Context.MODE_PRIVATE).getInt(LAST_STATUS, STATUS_INIT))
     }
 
     override fun onPause() {
         super.onPause()
         model.notes.removeObservers(this)
+        currentStrategy?.persistStatus()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
+        currentStatus?.let { outPersistentState?.putInt(LAST_STATUS, it) }
+        super.onSaveInstanceState(outState, outPersistentState)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+        super.onRestoreInstanceState(savedInstanceState)
+        savedInstanceState?.let { pushStatus(it.getInt(LAST_STATUS, STATUS_INIT)) }
     }
 
     private fun getSpans() = if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) 2 else 3
@@ -273,12 +284,13 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, SwipeBu
     }
 
     fun showEditFragment(note : Note, view : View) {
+        val fragment = EditFragment.newInstance(note, view)
         supportFragmentManager.beginTransaction()
             .addToBackStack(null)
-            .replace(R.id.writingFrame, EditFragment.newInstance(note, view))
+            .replace(R.id.writingFrame, fragment, EditFragment.javaClass.simpleName)
             .commit()
+        pushStatus(STATUS_EDIT, fragment.EditStrategy(this))
         constraintLayout.show()
-        audioFab.hide()
     }
 
     override fun onBackPressed() {
@@ -356,7 +368,22 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, SwipeBu
             STATUS_ANNOTATE -> AnnotateStrategy(this)
             STATUS_RECORDING -> RecStrategy(this)
             STATUS_SAVE_REC -> SaveRecStrategy(this)
-            else -> InitStrategy(this)
+            else -> {
+                val fragment: Fragment? =
+                    supportFragmentManager.findFragmentByTag(EditFragment.javaClass.simpleName)
+                when {
+                    fragment != null -> {
+                        fragment as EditFragment
+                        when (newStatus) {
+                            STATUS_CONFIRM -> fragment.ConfirmStrategy(this)
+                            STATUS_CLOCK -> fragment.ClockStrategy(this)
+                            STATUS_EDIT -> fragment.EditStrategy(this)
+                            else -> InitStrategy(this)
+                        }
+                    }
+                    else -> InitStrategy(this)
+                }
+            }
         }
     }
 
@@ -371,6 +398,13 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, SwipeBu
     abstract class OnClickStrategy(val context: MainActivity): View.OnClickListener {
         abstract fun getPrimaryDrawable(): Drawable
         open fun getSecondaryDrawable(): Drawable? = null
+
+        open fun persistStatus() {
+            context.getPreferences(Context.MODE_PRIVATE).edit().apply {
+                putInt(LAST_STATUS, getStatus())
+                apply()
+            }
+        }
 
         open fun initialize() {
             context.primaryButton.setImageDrawable(getPrimaryDrawable())
@@ -396,6 +430,8 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, SwipeBu
 
         abstract fun onPrimaryClick()
         open fun onSecondaryClick() { }
+
+        abstract fun getStatus(): Int
     }
 
     inner class InitStrategy(context: MainActivity): OnClickStrategy(context) {
@@ -413,6 +449,8 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, SwipeBu
                 pushStatus(STATUS_ANNOTATE)
             }
         }
+
+        override fun getStatus(): Int = STATUS_INIT
     }
 
     inner class AnnotateStrategy(context: MainActivity): OnClickStrategy(context) {
@@ -438,6 +476,8 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, SwipeBu
             super.onSecondaryClick()
             inputText.addBulletPoint()
         }
+
+        override fun getStatus(): Int = STATUS_ANNOTATE
     }
 
     inner class RecStrategy(context: MainActivity): OnClickStrategy(context) {
@@ -455,6 +495,8 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, SwipeBu
             expandEditText()
             pushStatus(STATUS_SAVE_REC)
         }
+
+        override fun getStatus(): Int = STATUS_RECORDING
     }
 
     inner class SaveRecStrategy(context: MainActivity): OnClickStrategy(context) {
@@ -481,6 +523,8 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, SwipeBu
         override fun onSecondaryClick() {
             context.onBackPressed()
         }
+
+        override fun getStatus(): Int = STATUS_SAVE_REC
     }
 
     override fun onTransitionResume(transition: Transition) {
@@ -914,8 +958,6 @@ class MainActivity : AppCompatActivity(), Transition.TransitionListener, SwipeBu
                 removeViewAt(0)
         }
     }
-
-
 
     fun getFilepath(name: String?) = directory.absolutePath + "/" + name
 
