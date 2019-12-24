@@ -39,4 +39,6 @@
     <dimen name="clock_padding">4dp</dimen>
     <dimen name="no_dimen">0dp</dimen>
     <dimen name="half_shown_margin">32dp</dimen>
+    <dimen name="date_picker_mask_size">48dp</dimen>
+    <dimen name="clock_elevation">2dp</dimen>
 </resources>

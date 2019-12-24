@@ -13,6 +13,9 @@
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
 
+
+
+
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -39,24 +42,14 @@
         android:focusable="false"
         android:background="@null" />
 
-    <include layout="@layout/layout_retracted"
-        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
-        app:layout_anchorGravity="bottom|right|end"
-        app:layout_anchor="@id/notesRecycler"
-        android:layout_gravity="bottom"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"/>
-
-    <com.stgi.rodentia.RecordingSwipeButton
-        android:id="@+id/audioFab"
-        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
-        app:layout_anchorGravity="bottom"
-        app:layout_anchor="@id/notesRecycler"
-        app:defaultSrc="@drawable/mic"
-        app:swipeDirection="right"
-        app:thresholdSignal="vibration"
-        android:padding="16dp"
+    <FrameLayout
+        android:id="@+id/controlsFrame"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="match_parent" />
+
+    <com.stgi.kotebook.FabStationView
+        android:id="@+id/fabStation"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
