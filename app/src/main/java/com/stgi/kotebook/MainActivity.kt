@@ -336,20 +336,22 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         model.update(data)
         val manager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
+        val intent = Intent(
+            this,
+            NotificationService::class.java)
+            .putExtra(ID, data.uid)
+            .putExtra(TITLE, data.title)
+            .putExtra(TEXT, data.text)
+            .putExtra(IS_RECORDING, data.isRecording)
+            .putExtra(COLOR, data.color)
+
         manager.setExact(
             RTC_WAKEUP,
-            data.timestamp!!,
-            PendingIntent.getForegroundService(
+            if (BuildConfig.DEBUG) Date().time + 5000L else data.timestamp!!,
+            PendingIntent.getService(
                 this,
                 13,
-                Intent(
-                    this,
-                    NotificationService::class.java)
-                    .putExtra(ID, data.uid)
-                    .putExtra(TITLE, data.title)
-                    .putExtra(TEXT, data.text)
-                    .putExtra(COLOR, data.color)
-                    .putExtra(IS_RECORDING, data.isRecording),
+                intent,
                 PendingIntent.FLAG_UPDATE_CURRENT
             )
         )

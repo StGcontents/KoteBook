@@ -23,6 +23,9 @@ interface NoteDataDao {
     @Update
     fun updateNotes(vararg notes: Note.NoteData)
 
+    @Query("UPDATE notedata SET timestamp = NULL WHERE uid = :uid")
+    fun resetAlarm(uid: Int)
+
     @Delete
     fun delete(note: Note.NoteData)
 
