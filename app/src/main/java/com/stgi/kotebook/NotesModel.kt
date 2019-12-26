@@ -4,14 +4,22 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 
 class NotesModel(application: Application) : AndroidViewModel(application) {
 
+    private val migrationFrom5To6: Migration = object : Migration(5, 6) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE NoteData ADD COLUMN timestamp INTEGER")
+        }
+    }
+
     private val db : NotesDatabase by lazy {
             Room.databaseBuilder(
                 application, NotesDatabase::class.java, "notes-db"
-            ).fallbackToDestructiveMigration().build()
+            ).addMigrations(migrationFrom5To6).build()
     }
 
     val notes: LiveData<List<Note.NoteData>> by lazy {

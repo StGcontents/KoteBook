@@ -18,6 +18,7 @@ open class Note(data: NoteData) : Serializable {
     var text = data.text
     var pinned = data.pinned
     val isRecording: Boolean = data.isRecording
+    var timestamp: Long? = data.timestamp
     private var color = data.color
     private var textColor = calculateBest()
 
@@ -38,7 +39,7 @@ open class Note(data: NoteData) : Serializable {
     private fun calculateDistance(c : Int) =
         (c.red.toDouble().pow(2) + c.green.toDouble().pow(2) + c.blue.toDouble().pow(2)).pow(0.5)
 
-    fun toData() = NoteData(text, pinned, title, color, isRecording).also { it.uid = id }
+    fun toData() = NoteData(title = title, text = text, color = color, isRecording = isRecording, timestamp = timestamp, pinned = pinned).also { it.uid = id }
 
     override fun equals(other: Any?): Boolean {
         return super.equals(other) || (other is Note && other.id == this.id)
@@ -57,7 +58,8 @@ open class Note(data: NoteData) : Serializable {
         @ColumnInfo(name = "pinned") var pinned: Boolean = false,
         @ColumnInfo(name = "title") var title: String = "",
         @ColumnInfo(name = "color") val color: Int,
-        @ColumnInfo(name = "is_recording") val isRecording: Boolean = false
+        @ColumnInfo(name = "is_recording") val isRecording: Boolean = false,
+        @ColumnInfo(name = "timestamp") var timestamp: Long? = null
     ) {
         @PrimaryKey(autoGenerate = true) var uid: Int = 0
     }

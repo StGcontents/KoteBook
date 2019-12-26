@@ -596,17 +596,22 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
         }
 
         private fun retrieveDate() {
-            val hhmm: Long = fabStation.clockFab.getTime()
             val calendar = Calendar.getInstance()
-            view!!.datePicker.apply {
+            fabStation.datePicker.apply {
                 calendar.set(Calendar.YEAR, year)
                 calendar.set(Calendar.MONTH, month)
                 calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                calendar.set(Calendar.HOUR_OF_DAY, fabStation.clockFab.getHour())
+                calendar.set(Calendar.MINUTE, fabStation.clockFab.getMinute())
             }
-            var dateTime: Long = calendar.timeInMillis + hhmm
+            var dateTime: Long = calendar.timeInMillis
             if (dateTime < Date().time)
                 dateTime += 24L * 60L * 60L * 1000L
-            Toast.makeText(context, "Alarm set to " + DateFormat.getInstance().format(Date(dateTime)), Toast.LENGTH_SHORT).show()
+
+            note!!.timestamp = dateTime
+            activity.scheduleAlarm(note!!.toData())
+
+            Toast.makeText(activity, "Alarm set to " + DateFormat.getInstance().format(Date(dateTime)), Toast.LENGTH_SHORT).show()
         }
     }
 

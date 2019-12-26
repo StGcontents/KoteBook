@@ -9,6 +9,7 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.widget.DatePicker
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.constraintlayout.widget.ConstraintSet.*
@@ -22,6 +23,7 @@ import com.stgi.rodentia.SwipeButton
 import kotlinx.android.synthetic.main.date_picker_mask.view.*
 import kotlinx.android.synthetic.main.fragment_edit.view.*
 import kotlinx.android.synthetic.main.layout_fab_station.view.*
+import java.util.*
 import kotlin.math.max
 
 const val STATUS_INIT = 1
@@ -94,6 +96,22 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
                 reverseTransition(150)
             }
         }
+    }
+
+    fun setClockTo(timestamp: Long?) {
+        if (timestamp == null) {
+            setClockTo(Date().time)
+        } else {
+            val calendar = Calendar.getInstance()
+            calendar.time = Date(timestamp)
+            clockFab.setHour(calendar.get(Calendar.HOUR_OF_DAY))
+            clockFab.setMinute(calendar.get(Calendar.MINUTE))
+            datePicker.init(
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ) { _, _, _, _ -> }
+            }
     }
 
     override fun onTouch(view: View?, ev: MotionEvent?): Boolean {

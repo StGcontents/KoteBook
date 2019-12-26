@@ -119,7 +119,8 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NotesViewHolder>(), View.
             val newNote = newNotes[newItemPosition]
             val result = oldNote.id == newNote.id && oldNote.text == newNote.text &&
                     oldNote.title == newNote.title && oldNote.pinned == newNote.pinned &&
-                    oldNote.getColor() == newNote.getColor() && oldNote.isRecording == newNote.isRecording
+                    oldNote.getColor() == newNote.getColor() && oldNote.isRecording == newNote.isRecording &&
+                    oldNote.timestamp == newNote.timestamp
             return result
         }
     }

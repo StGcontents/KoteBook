@@ -1,7 +1,11 @@
 package com.stgi.kotebook
 
 import android.Manifest
+import android.app.AlarmManager
+import android.app.AlarmManager.RTC_WAKEUP
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color
@@ -213,6 +217,7 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
     }
 
     fun showEditFragment(note : Note, view : View) {
+        fabStation.setClockTo(note.timestamp)
         val fragment = EditFragment.newInstance(note, view)
         supportFragmentManager.beginTransaction()
             .addToBackStack(null)
@@ -325,6 +330,29 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
                 color = RandomColor().gen(), isRecording = true)
             model.add(data)
         }
+    }
+
+    fun scheduleAlarm(data: Note.NoteData) {
+        model.update(data)
+        val manager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        manager.setExact(
+            RTC_WAKEUP,
+            data.timestamp!!,
+            PendingIntent.getForegroundService(
+                this,
+                13,
+                Intent(
+                    this,
+                    NotificationService::class.java)
+                    .putExtra(ID, data.uid)
+                    .putExtra(TITLE, data.title)
+                    .putExtra(TEXT, data.text)
+                    .putExtra(COLOR, data.color)
+                    .putExtra(IS_RECORDING, data.isRecording),
+                PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        )
     }
 
     fun getStrategy(newStatus: Int): FabStationView.OnClickStrategy {

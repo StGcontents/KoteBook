@@ -83,11 +83,15 @@ class ClockButton(context: Context, attributeSet: AttributeSet?): ConstraintLayo
     fun asClock() {
         isEnabled = false
         clock.isEnabled = true
+
+        showAmPmButton()
     }
 
     fun asButton() {
         isEnabled = true
         clock.isEnabled = false
+
+        hideAmPmButton()
     }
 
     fun showAmPmButton(immediate: Boolean = false) {
@@ -98,9 +102,7 @@ class ClockButton(context: Context, attributeSet: AttributeSet?): ConstraintLayo
             }
         } else {
             amPmButton.apply {
-                alpha = 0f
                 visibility = View.VISIBLE
-
                 animate().apply {
                     cancel()
                     alpha(1f)
@@ -119,9 +121,6 @@ class ClockButton(context: Context, attributeSet: AttributeSet?): ConstraintLayo
             }
         } else {
             amPmButton.apply {
-                alpha = 1f
-                visibility = View.VISIBLE
-
                 animate().apply {
                     cancel()
                     alpha(0f)
