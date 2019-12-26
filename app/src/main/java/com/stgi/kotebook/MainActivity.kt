@@ -113,11 +113,13 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         notesRecycler.setOnTouchListener(dismissInputListener)
         notesRecycler.addOnItemTouchListener(object : RecyclerView.OnItemTouchListener {
             override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
-                dismissInputListener.onTouch(rv, e)
-                val child = rv.findChildViewUnder(e.x, e.y)
-                hideAllOptionsBesides(child)
-                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(inputText.windowToken, 0)
+                if (e.action == KeyEvent.ACTION_DOWN) {
+                    dismissInputListener.onTouch(rv, e)
+                    val child = rv.findChildViewUnder(e.x, e.y)
+                    hideAllOptionsBesides(child)
+                    val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(inputText.windowToken, 0)
+                }
                 return false
             }
 

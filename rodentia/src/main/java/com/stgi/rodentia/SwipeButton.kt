@@ -27,8 +27,8 @@ const val DEFAULT = -1
 const val LEFT = -1
 const val RIGHT = 1
 
-const val VIBRATION = 0
-const val NONE = 1
+const val VIBRATION = 1
+const val NONE = 0
 
 const val MINIMUM = 1000
 
@@ -99,7 +99,7 @@ open class SwipeButton(context: Context, attributeSet: AttributeSet?):
             thresholdSensitivity =
                 a.getDimensionPixelSize(R.styleable.SwipeButton_thresholdSensitivity, DEFAULT)
 
-            signal = a.getResourceId(R.styleable.SwipeButton_thresholdSignal, NONE)
+            signal = a.getResourceId(R.styleable.SwipeButton_thresholdSignal, VIBRATION)
 
             direction = a.getInt(R.styleable.SwipeButton_swipeDirection, RIGHT)
             when (direction) {

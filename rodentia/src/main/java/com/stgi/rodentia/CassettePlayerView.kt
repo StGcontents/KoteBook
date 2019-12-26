@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.CountDownTimer
 import android.util.AttributeSet
 import android.util.Log
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -28,6 +29,7 @@ import kotlin.math.min
 import kotlin.math.sign
 
 
+private const val ERROR = -1
 private const val CREATED = 0
 private const val INIT = 1
 private const val STARTED = 2
@@ -64,6 +66,23 @@ class CassettePlayerView(context: Context, attrs: AttributeSet): LinearLayout(co
         addView(barker)
 
         playButton.setOnClickListener { if (playButton.isSelected) pause() else start() }
+
+        setOnKeyListener { _, keyCode, ev ->
+            if (ev.action == KeyEvent.ACTION_DOWN) {
+                if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_ALL_APPS || keyCode == KeyEvent.KEYCODE_HOME) {
+                    stop()
+                }
+            }
+            false
+        }
+
+        addOnAttachStateChangeListener(object : OnAttachStateChangeListener {
+            override fun onViewDetachedFromWindow(p0: View?) {
+                stop()
+            }
+
+            override fun onViewAttachedToWindow(p0: View?) { }
+        })
 
         val tl: OnTouchListener = object : OnTouchListener {
             private var lastAngle: Float = 0f
@@ -140,6 +159,11 @@ class CassettePlayerView(context: Context, attrs: AttributeSet): LinearLayout(co
                         .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                         .build()
                 )
+                setOnErrorListener { _, _, p2 ->
+                    status = ERROR
+                    mediaPlayer?.release()
+                    false
+                }
                 setDataSource(context, uri)
                 setOnCompletionListener { stop() }
                 setOnPreparedListener {
@@ -158,13 +182,15 @@ class CassettePlayerView(context: Context, attrs: AttributeSet): LinearLayout(co
                 .show()
             stop()
         } else if (status == INIT || status == PAUSED) {
-            status = STARTED
-            mediaPlayer?.setOnCompletionListener {
-                stop()
+            mediaPlayer?.let {
+                status = STARTED
+                it.setOnCompletionListener {
+                    stop()
+                }
+                playButton.isSelected = true
+                it.start()
+                initTimer()
             }
-            playButton.isSelected = true
-            mediaPlayer?.start()
-            initTimer()
         }
     }
 
@@ -205,8 +231,8 @@ class CassettePlayerView(context: Context, attrs: AttributeSet): LinearLayout(co
     }
 
     override fun onDetachedFromWindow() {
+        //mediaPlayer?.release()
         super.onDetachedFromWindow()
-        mediaPlayer?.release()
     }
 
     private var lastPercent = 0f

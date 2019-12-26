@@ -193,14 +193,11 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
         open fun onDatePickerClicked() { }
 
         open fun onFanClicked() {
-            fabStation.fanFab.isSelected =
-                if (fabStation.fanFab.isSelected) {
-                    SetBuilder(fabStation).collapseFan().apply()
-                    false
-                } else {
-                    SetBuilder(fabStation).expandFan().apply()
-                    true
-                }
+            if (fabStation.fanFab.isSelected) {
+                SetBuilder(fabStation).collapseFan().apply()
+            } else {
+                SetBuilder(fabStation).expandFan().apply()
+            }
         }
 
         fun collapseFanIfNeeded() {
@@ -228,7 +225,6 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
          */
         fun showPrimary(): SetBuilder {
             val id = station.primaryFab.id
-            //set.clear(id)
             set.connect(id, BOTTOM, margin = station.getPixels(R.dimen.fab_margin))
             set.connect(id, END, margin = station.getPixels(R.dimen.fab_margin))
             return this
@@ -236,7 +232,6 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
 
         fun hidePrimary(): SetBuilder {
             val id = station.primaryFab.id
-            //set.clear(id)
             set.connect(id, TOP, PARENT_ID, BOTTOM)
             set.connect(id, END)
             return this
@@ -474,8 +469,8 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
             set.connect(calendarMaskId, END, calendarId, END)
             set.connect(calendarMaskId, TOP, calendarId, TOP)
             set.connect(calendarMaskId, BOTTOM, calendarId, BOTTOM)
-            set.constrainWidth(calendarMaskId, station.datePicker.width)
-            set.constrainHeight(calendarMaskId, station.datePicker.height)
+            set.constrainPercentWidth(calendarMaskId, 0.7f)
+            set.constrainPercentHeight(calendarMaskId, 0.5f)
 
             return this
         }
@@ -503,6 +498,11 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
             chainedStart = object: ChainedRunnable(chainedStart) {
                 override fun runInternal() {
                     station.post { station.paletteMask.visibility = View.VISIBLE }
+                }
+            }
+            chainedEnd = object : ChainedRunnable(chainedEnd) {
+                override fun runInternal() {
+                    station.fanFab.isSelected = true
                 }
             }
 
@@ -541,6 +541,12 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
                     station.post { station.paletteMask.visibility = View.GONE }
                 }
             }
+            chainedEnd = object : ChainedRunnable(chainedEnd) {
+                override fun runInternal() {
+                    station.fanFab.isSelected = false
+                }
+            }
+
             palette
                 .forEach { color ->
                     station.findViewWithTag<View>(color)?.apply {
