@@ -47,7 +47,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <com.stgi.kotebook.FabStationView
+    <com.stgi.rodentia.FabStationView
         android:id="@+id/fabStation"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

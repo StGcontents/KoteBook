@@ -1,4 +1,4 @@
-package com.stgi.kotebook
+package com.stgi.rodentia
 
 import android.content.Context
 import android.util.Log
@@ -11,7 +11,10 @@ fun View.getPixels(resId: Int): Int = resources.getDimensionPixelSize(resId)
 fun Context.getNoDimen(): Int = getPixels(R.dimen.no_dimen)
 fun View.getNoDimen(): Int = getPixels(R.dimen.no_dimen)
 
-fun logd(tag: String? = "KoteBook", message: String?) { Log.d(tag, message) }
+fun logd(tag: String? = "KoteBook", message: String?) {
+    if (BuildConfig.DEBUG)
+        Log.d(tag, message)
+}
 
 val palette = intArrayOf(
     R.color.noteColor31,

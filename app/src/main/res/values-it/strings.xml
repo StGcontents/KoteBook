@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_settings">Impostazioni</string>
+
+    <string name="insert_title">Inserisci un titolo…</string>
+    <string name="insert_text">Scrivi una nota…</string>
+    <string name="snackbar_message">Hai rimosso una nota.</string>
+    <string name="snackbar_undo">ANNULLA</string>
+    <string name="toast_alarm_set">Promemoria fissato per:&#32;</string>
+</resources>

@@ -1,17 +1,13 @@
-package com.stgi.kotebook
+package com.stgi.rodentia
 
 import android.content.Context
-import android.transition.ChangeBounds
-import android.transition.TransitionManager
 import android.util.AttributeSet
-import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.constraintlayout.widget.ConstraintSet.*
-import java.util.*
 
 class ClockButton(context: Context, attributeSet: AttributeSet?): ConstraintLayout(context, attributeSet) {
     private val clock: ClockView

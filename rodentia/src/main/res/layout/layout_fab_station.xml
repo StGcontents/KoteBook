@@ -146,7 +146,7 @@
         app:layout_constraintTop_toTopOf="parent"
         android:visibility="gone"/>
 
-    <com.stgi.kotebook.ClockButton
+    <com.stgi.rodentia.ClockButton
         android:id="@+id/clockFab"
         android:layout_width="48dp"
         android:layout_height="48dp"

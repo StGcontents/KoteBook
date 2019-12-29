@@ -1,31 +1,29 @@
-package com.stgi.kotebook
+package com.stgi.rodentia
 
 import android.content.Context
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.TransitionDrawable
+import android.transition.ChangeBounds
+import android.transition.Transition
+import android.transition.TransitionManager
 import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
-import android.widget.DatePicker
+import android.view.inputmethod.InputMethodManager
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.constraintlayout.widget.ConstraintSet.*
 import androidx.core.view.forEach
 import androidx.core.view.isVisible
-import androidx.transition.ChangeBounds
-import androidx.transition.Transition
-import androidx.transition.TransitionManager
-import com.stgi.rodentia.RecordingSwipeButton
-import com.stgi.rodentia.SwipeButton
 import kotlinx.android.synthetic.main.date_picker_mask.view.*
-import kotlinx.android.synthetic.main.fragment_edit.view.*
 import kotlinx.android.synthetic.main.layout_fab_station.view.*
 import java.util.*
 import kotlin.math.max
 
+const val STATUS_INTERIM = -1
 const val STATUS_INIT = 1
 const val STATUS_ANNOTATE = 2
 const val STATUS_RECORDING = 4
@@ -98,6 +96,12 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
         }
     }
 
+    fun switchOff() {
+        swipeFab.switchOff()
+    }
+
+    fun popRecording() = swipeFab.popRecording()
+
     fun setClockTo(timestamp: Long?) {
         if (timestamp == null) {
             setClockTo(Date().time)
@@ -113,6 +117,26 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
             ) { _, _, _, _ -> }
             }
     }
+
+    fun getHour() = clockFab.getHour()
+    fun getMinute() = clockFab.getMinute()
+    fun setHour(hour: Int) = clockFab.setHour(hour)
+    fun setMinute(minute: Int) = clockFab.setMinute(minute)
+
+    fun getCalendar(): Calendar {
+        val calendar = Calendar.getInstance()
+        datePicker.apply {
+            calendar.set(Calendar.YEAR, year)
+            calendar.set(Calendar.MONTH, month)
+            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+        }
+        calendar.set(Calendar.HOUR_OF_DAY, getHour())
+        calendar.set(Calendar.MINUTE, getMinute())
+        if (calendar.timeInMillis < Date().time)
+            calendar.add(Calendar.HOUR, 24)
+        return calendar
+    }
+
 
     override fun onTouch(view: View?, ev: MotionEvent?): Boolean {
         if (ev != null && view != null && paletteCallback != null) {
@@ -147,19 +171,12 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
         this.strategy?.initialize(this)
     }
 
-    abstract class OnClickStrategy(val activity: MainActivity): OnClickListener, SwipeButton.OnSwipeListener {
+    abstract class OnClickStrategy(val enforcer: FabStationController) : OnClickListener, SwipeButton.OnSwipeListener {
         protected lateinit var fabStation: FabStationView
 
-        abstract fun getPrimaryDrawable(): Drawable
+        abstract fun getPrimaryDrawable(): Drawable?
         open fun getSecondaryDrawable(): Drawable? = null
         open fun getTertiaryDrawable(): Drawable? = null
-
-        open fun persistStatus() {
-            activity.getPreferences(Context.MODE_PRIVATE).edit().apply {
-                putInt(LAST_STATUS, getStatus())
-                apply()
-            }
-        }
 
         open fun initialize(view: FabStationView) {
             fabStation = view
@@ -188,7 +205,7 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
         open fun isDismissible() = true
 
         open fun onBackPressed(): Boolean {
-            activity.pushStatus(STATUS_INIT)
+            enforcer.pushStatus(STATUS_INIT)
             return false
         }
 
@@ -229,6 +246,19 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
         override fun onAutoRelease() { }
     }
 
+    class InterimStrategy(private val strategy: OnClickStrategy): OnClickStrategy(strategy.enforcer) {
+        override fun getPrimaryDrawable(): Drawable? = strategy.getPrimaryDrawable()
+        override fun getSecondaryDrawable(): Drawable? = strategy.getSecondaryDrawable()
+        override fun getTertiaryDrawable(): Drawable? = strategy.getTertiaryDrawable()
+
+        override fun onPrimaryClick() { }
+        override fun onBackPressed(): Boolean = true
+
+        override fun onClick(v: View?) { }
+
+        override fun getStatus(): Int = STATUS_INTERIM
+    }
+
     class SetBuilder(private val station: FabStationView) {
         private val set: ConstraintSet = ConstraintSet()
         private var chainedStart: ChainedRunnable? = null
@@ -237,6 +267,8 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
         init {
             set.clone(station)
         }
+
+        private fun getSafetyMargin() = station.getPixels(R.dimen.station_safety_margin)
 
         /**
          * PRIMARY FAB
@@ -250,7 +282,7 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
 
         fun hidePrimary(): SetBuilder {
             val id = station.primaryFab.id
-            set.connect(id, TOP, PARENT_ID, BOTTOM)
+            set.connect(id, TOP, PARENT_ID, BOTTOM, getSafetyMargin())
             set.connect(id, END)
             return this
         }
@@ -340,7 +372,7 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
         fun hideSwipe(): SetBuilder {
             val id = station.swipeFab.id
             set.clear(id, BOTTOM)
-            set.connect(id, TOP, PARENT_ID, BOTTOM)
+            set.connect(id, TOP, PARENT_ID, BOTTOM, getSafetyMargin())
             return this
         }
 
@@ -452,7 +484,7 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
             val calendarId = station.datePickerMask.id
             set.clear(calendarId, START)
             set.clear(calendarId, END)
-            set.connect(calendarId, END, if (minimize) station.left_side_guideline.id else PARENT_ID, START)
+            set.connect(calendarId, END, if (minimize) station.left_side_guideline.id else PARENT_ID, START, getSafetyMargin())
             set.constrainWidth(calendarId, station.getPixels(R.dimen.date_picker_mask_size))
             set.constrainHeight(calendarId, station.getPixels(R.dimen.date_picker_mask_size))
 
@@ -508,7 +540,7 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
         fun hideFan(): SetBuilder {
             val id = station.fanFab.id
             set.clear(id, START)
-            set.connect(id, END, PARENT_ID, START)
+            set.connect(id, END, PARENT_ID, START, getSafetyMargin())
             return this
         }
 
@@ -598,7 +630,12 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
         fun showTextInput(): SetBuilder {
             chainedEnd = object: ChainedRunnable(chainedEnd) {
                 override fun runInternal() {
-                    station.post { station.editorFrame.visibility = View.VISIBLE }
+                    station.post {
+                        station.editorFrame.visibility = View.VISIBLE
+                        station.inputText.requestFocus()
+                        val imm = station.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                        imm.showSoftInput(station.inputText, 0)
+                    }
                 }
             }
             return hideAudioInput()
@@ -632,13 +669,18 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
         }
 
         fun apply(duration: Long = 150L) {
-            station.post {
+            //station.post {
                 TransitionManager.beginDelayedTransition(station, ChangeBounds().apply {
                     this.duration = duration
-                    addListener(StartEndListener(chainedStart, chainedEnd))
+                    addListener(
+                        StartEndListener(
+                            chainedStart,
+                            chainedEnd
+                        )
+                    )
                 })
                 set.applyTo(station)
-            }
+            //}
         }
 
         @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
@@ -678,5 +720,10 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
     interface OnPaletteItemTouchedListener {
         fun onColorSelected(colorId: Int)
         fun onColorConfirmed()
+    }
+
+    interface FabStationController {
+        fun pushStatus(newStatus: Int)
+        fun scheduleAlarm(data: Any)
     }
 }

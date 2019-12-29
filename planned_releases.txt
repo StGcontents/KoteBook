@@ -1,0 +1,21 @@
+KOTEBOOK EVOLUTION
+
+Agouti release:
+- all features but Alarm notifications
+- Portrait only
+
+Beaver release:
+- Multiple screens support (especially tablets)
+- Orientation changes support
+
+Cavia release:
+- Alarm notifications
+- EditFragment showing improvement
+
+
+
+
+
+
+Possible features:
+- Implement Profile and let users share tasks (also put annoying users in little cages for a while)

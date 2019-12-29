@@ -14,7 +14,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.PersistableBundle
 import android.text.TextUtils
-import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
@@ -30,30 +29,24 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
-import com.stgi.rodentia.SwipeButton
+import com.stgi.rodentia.*
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.layout_fab_station.*
-import kotlinx.android.synthetic.main.layout_retracted.audioEt
-import kotlinx.android.synthetic.main.layout_retracted.bgView
-import kotlinx.android.synthetic.main.layout_retracted.inputText
+import kotlinx.android.synthetic.main.layout_retracted.*
+import kotlinx.android.synthetic.main.layout_retracted.view.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.*
 import kotlin.random.Random
 
-private const val DURATION = 150L
-
 const val LAST_STATUS = "currentStatus"
-
-const val REC_HIDDEN_FLAGS = STATUS_ANNOTATE + STATUS_SAVE_REC + STATUS_EDIT + STATUS_CONFIRM + STATUS_CLOCK
 
 private const val PERMISSIONS_REQUEST = 13
 
 const val DIRECTORY = "/KoteBook/"
 
 class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
-    NotesAdapter.OnNotesChangedListener {
+    NotesAdapter.OnNotesChangedListener, FabStationView.FabStationController {
 
     private val adapter : NotesAdapter = NotesAdapter()
 
@@ -140,7 +133,9 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
                     ?.sortedWith(compareBy({ !it.pinned }, { it.id })))
             })
 
-        getPreferences(Context.MODE_PRIVATE).getInt(LAST_STATUS, STATUS_INIT).apply {
+        getPreferences(Context.MODE_PRIVATE).getInt(LAST_STATUS,
+            STATUS_INIT
+        ).apply {
             pushStatus(this)
         }
     }
@@ -148,7 +143,12 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
     override fun onPause() {
         super.onPause()
         model.notes.removeObservers(this)
-        currentStrategy?.persistStatus()
+        currentStrategy?.let {
+            getPreferences(Context.MODE_PRIVATE).edit().apply {
+                putInt(LAST_STATUS, it.getStatus())
+                apply()
+            }
+        }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -174,7 +174,9 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
         super.onRestoreInstanceState(savedInstanceState)
-        savedInstanceState?.let { pushStatus(it.getInt(LAST_STATUS, STATUS_INIT)) }
+        savedInstanceState?.let { pushStatus(it.getInt(LAST_STATUS,
+            STATUS_INIT
+        )) }
     }
 
     private fun getStaggeredLayout(portrait: Boolean) =
@@ -218,12 +220,12 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
 
     fun showEditFragment(note : Note, view : View) {
         fabStation.setClockTo(note.timestamp)
+        pushStatus(STATUS_INTERIM)
         val fragment = EditFragment.newInstance(note, view)
         supportFragmentManager.beginTransaction()
             .addToBackStack(null)
             .replace(R.id.writingFrame, fragment, EditFragment::class.simpleName)
             .commit()
-        pushStatus(STATUS_EDIT, fragment.EditStrategy(this))
     }
 
     override fun onBackPressed() {
@@ -257,8 +259,8 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         model.remove(data)
 
         Snackbar
-            .make(rootLayout, "You delete a note.", Snackbar.LENGTH_LONG)
-            .setAction("UNDO") { model.add(data) }
+            .make(rootLayout, getString(R.string.snackbar_message), Snackbar.LENGTH_LONG)
+            .setAction(R.string.snackbar_undo) { model.add(data) }
             .setActionTextColor(getColor(R.color.colorAccent))
             .addCallback(object : Snackbar.Callback() {
                 override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
@@ -275,9 +277,10 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
                                 }
                             }
                         }
-                        else -> {
-                            Log.d("SNACKBAR_DISMISS", "What is it? " + event)
-                        }
+                        else -> logd(
+                            "Snackbar",
+                            "Which is it? $event"
+                        )
                     }
                 }
             })
@@ -306,13 +309,13 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
     }
 
     override fun onAutoRelease() {
-        tmpFile = swipeFab.popRecording()
+        tmpFile = fabStation.popRecording()
         if (currentStrategy is RecStrategy)
             currentStrategy?.onPrimaryClick()
     }
 
     override fun onRelease() {
-        tmpFile = swipeFab.popRecording()
+        tmpFile = fabStation.popRecording()
     }
 
     fun persistRecording() = GlobalScope.launch {
@@ -332,7 +335,9 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         }
     }
 
-    fun scheduleAlarm(data: Note.NoteData) {
+    override fun scheduleAlarm(data: Any) {
+        if (data !is Note.NoteData) return
+
         model.update(data)
         val manager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
@@ -357,8 +362,9 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         )
     }
 
-    fun getStrategy(newStatus: Int): FabStationView.OnClickStrategy {
+    private fun getStrategy(newStatus: Int): FabStationView.OnClickStrategy {
         return when (newStatus) {
+            STATUS_INTERIM -> FabStationView.InterimStrategy(currentStrategy!!)
             STATUS_ANNOTATE -> AnnotateStrategy(this)
             STATUS_RECORDING -> RecStrategy(this)
             STATUS_SAVE_REC -> SaveRecStrategy(this)
@@ -381,7 +387,11 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         }
     }
 
-    fun pushStatus(newStatus: Int, strategy: FabStationView.OnClickStrategy = getStrategy(newStatus)) {
+    override fun pushStatus(newStatus: Int) {
+        pushStatus(newStatus, getStrategy(newStatus))
+    }
+
+    private fun pushStatus(newStatus: Int, strategy: FabStationView.OnClickStrategy) {
         if (currentStatus != newStatus) {
             currentStatus = newStatus
             currentStrategy = strategy
@@ -390,7 +400,7 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
     }
 
     inner class InitStrategy(context: MainActivity): FabStationView.OnClickStrategy(context) {
-        override fun getPrimaryDrawable() = resources.getDrawable(R.drawable.add, theme)
+        override fun getPrimaryDrawable(): Drawable? = resources.getDrawable(R.drawable.add, theme)
         override fun initialize(view: FabStationView) {
             super.initialize(view)
             fabStation.show()
@@ -404,6 +414,7 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
                 .hideTertiary()
                 .showSwipe()
                 .hideFan()
+                .hideDatePicker()
                 .apply()
         }
 
@@ -416,16 +427,12 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         override fun getStatus(): Int = STATUS_INIT
 
 
-        override fun onSwiped(): Boolean = activity.onSwiped()
+        override fun onSwiped(): Boolean = this@MainActivity.onSwiped()
     }
 
     inner class AnnotateStrategy(context: MainActivity): FabStationView.OnClickStrategy(context) {
-        override fun getPrimaryDrawable() = resources.getDrawable(R.drawable.done, theme)
-        override fun getSecondaryDrawable(): Drawable? = activity.getDrawable(R.drawable.bullets)
-
-        override fun initialize(view: FabStationView) {
-            super.initialize(view)
-        }
+        override fun getPrimaryDrawable(): Drawable? = getDrawable(R.drawable.done)
+        override fun getSecondaryDrawable(): Drawable? = getDrawable(R.drawable.bullets)
 
         override fun shapeStation(builder: FabStationView.SetBuilder) {
             super.shapeStation(builder)
@@ -442,6 +449,7 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
             consumeInput()
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(inputText.windowToken, 0)
+            fabStation.inputText.clearFocus()
             pushStatus(STATUS_INIT)
         }
 
@@ -454,12 +462,8 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
     }
 
     inner class RecStrategy(context: MainActivity): FabStationView.OnClickStrategy(context) {
-        override fun getPrimaryDrawable() = resources.getDrawable(R.drawable.stop, theme)
+        override fun getPrimaryDrawable(): Drawable? = getDrawable(R.drawable.stop)
         override fun isDismissible() = false
-
-        override fun initialize(view: FabStationView) {
-            super.initialize(view)
-        }
 
         override fun shapeStation(builder: FabStationView.SetBuilder) {
             super.shapeStation(builder)
@@ -473,26 +477,26 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         }
 
         override fun onBackPressed(): Boolean {
-            swipeFab.switchOff()
+            fabStation.switchOff()
             tmpFile?.delete()
             tmpFile = null
             return super.onBackPressed()
         }
 
         override fun onPrimaryClick() {
-            swipeFab.switchOff()
+            fabStation.switchOff()
             pushStatus(STATUS_SAVE_REC)
         }
 
         override fun getStatus(): Int = STATUS_RECORDING
 
-        override fun onRelease() { activity.onRelease() }
-        override fun onAutoRelease() { activity.onAutoRelease() }
+        override fun onRelease() { this@MainActivity.onRelease() }
+        override fun onAutoRelease() { this@MainActivity.onAutoRelease() }
     }
 
     inner class SaveRecStrategy(context: MainActivity): FabStationView.OnClickStrategy(context) {
-        override fun getPrimaryDrawable() = resources.getDrawable(R.drawable.done, theme)
-        override fun getSecondaryDrawable(): Drawable? = activity.getDrawable(R.drawable.cancel)
+        override fun getPrimaryDrawable(): Drawable? = getDrawable(R.drawable.done)
+        override fun getSecondaryDrawable(): Drawable? = getDrawable(R.drawable.cancel)
 
         override fun initialize(view: FabStationView) {
             super.initialize(view)
@@ -524,7 +528,7 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         }
 
         override fun onSecondaryClick() {
-            activity.onBackPressed()
+            onBackPressed()
         }
 
         override fun getStatus(): Int = STATUS_SAVE_REC
@@ -538,7 +542,9 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
     inner class RandomColor {
         fun gen() : Int {
             val gen = Random(Date().time)
-            return resources.getColor(palette[gen.nextInt(palette.size)], theme)
+            return resources.getColor(
+                palette[gen.nextInt(
+                    palette.size)], theme)
         }
     }
 }

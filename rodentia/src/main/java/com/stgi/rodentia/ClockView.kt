@@ -1,4 +1,4 @@
-package com.stgi.kotebook
+package com.stgi.rodentia
 
 import android.content.Context
 import android.util.AttributeSet
@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.widget.RelativeLayout
-import android.widget.Toast
 import kotlinx.android.synthetic.main.layout_clock.view.*
 import kotlin.math.abs
 import kotlin.math.asin

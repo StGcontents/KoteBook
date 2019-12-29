@@ -2,6 +2,7 @@ package com.stgi.kotebook
 
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.graphics.PorterDuff
@@ -11,7 +12,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.transition.ChangeBounds
 import android.transition.TransitionManager
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.CompoundButton
 import android.widget.EditText
@@ -23,19 +26,16 @@ import androidx.constraintlayout.widget.ConstraintSet.*
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
-import androidx.core.view.forEach
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import com.stgi.rodentia.CassettePlayerView
+import com.stgi.rodentia.*
 import kotlinx.android.synthetic.main.fragment_edit.*
 import kotlinx.android.synthetic.main.fragment_edit.view.*
 import kotlinx.android.synthetic.main.layout_cassette.view.*
-import kotlinx.android.synthetic.main.layout_fab_station.view.*
 import kotlinx.android.synthetic.main.layout_text_editor.*
 import kotlinx.android.synthetic.main.layout_text_editor.view.*
 import java.io.File
 import java.text.DateFormat
-import java.util.*
 
 
 const val RESULT_OK = "RESULT_OK"
@@ -65,7 +65,7 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
             activity?.getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager
         if (b) {
             activity?.let {
-                (it as MainActivity).pushStatus(STATUS_CONFIRM, ConfirmStrategy(it))
+                (it as MainActivity).pushStatus(STATUS_CONFIRM)
             }
             imm.showSoftInput(v, 0)
             v.setSelection(v.text.length)
@@ -91,10 +91,7 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
         view.fakeView.setOnTouchListener { _, _ ->
             if (!isEditing)
                 (activity?.let {
-                    (it as MainActivity).pushStatus(
-                        STATUS_CONFIRM,
-                        ConfirmStrategy(it)
-                    )
+                    (it as MainActivity).pushStatus(STATUS_CONFIRM)
                 })
             true
         }
@@ -117,7 +114,10 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
                     titleEt.setText(note!!.title)
                     onStartingConstraintsSet(view)
                     view.visibility = View.VISIBLE
-                    applyFinalConstraints(endTask = Runnable { onFinalConstraintsSet(view) })
+                    applyFinalConstraints(endTask = Runnable {
+                        onFinalConstraintsSet(view)
+                        (activity as MainActivity).pushStatus(STATUS_EDIT)
+                    })
                 })
             }
         } else {
@@ -302,7 +302,7 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
 
             bulletPointScrollView.setOnTouchListener { _, _ ->
                 activity?.let {
-                    (it as MainActivity).pushStatus(STATUS_CONFIRM, ConfirmStrategy(it))
+                    (it as MainActivity).pushStatus(STATUS_CONFIRM)
                     view.bulletPointEditor.requestFocus()
                 }
                 false
@@ -436,8 +436,8 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
             }
     }
 
-    inner class EditStrategy(activity: MainActivity): FabStationView.OnClickStrategy(activity) {
-        override fun getPrimaryDrawable() = activity.resources.getDrawable(R.drawable.edit, activity.theme)
+    inner class EditStrategy(enforcer: FabStationView.FabStationController): FabStationView.OnClickStrategy(enforcer) {
+        override fun getPrimaryDrawable(): Drawable? = resources.getDrawable(R.drawable.edit, activity?.theme)
         override fun isDismissible() = false
 
         override fun initialize(view: FabStationView) {
@@ -462,20 +462,20 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
             if (this@EditFragment is AudioFragment)
                 this@EditFragment.view!!.playerView.stop()
             exit()
-            activity.pushStatus(STATUS_INIT)
+            enforcer.pushStatus(STATUS_INIT)
             return false
         }
 
         override fun onPrimaryClick() {
-            activity.pushStatus(STATUS_CONFIRM, ConfirmStrategy(activity))
+            enforcer.pushStatus(STATUS_CONFIRM)
         }
 
         override fun getStatus(): Int = STATUS_EDIT
     }
 
-    inner class ConfirmStrategy(context: MainActivity): FabStationView.OnClickStrategy(context) {
-        override fun getPrimaryDrawable() = activity.resources.getDrawable(R.drawable.done, activity.theme)
-        override fun getTertiaryDrawable() = activity.resources.getDrawable(R.drawable.bullets, activity.theme)
+    inner class ConfirmStrategy(enforcer: FabStationView.FabStationController): FabStationView.OnClickStrategy(enforcer) {
+        override fun getPrimaryDrawable(): Drawable? = resources.getDrawable(R.drawable.done, activity?.theme)
+        override fun getTertiaryDrawable(): Drawable? = resources.getDrawable(R.drawable.bullets, activity?.theme)
 
         override fun initialize(view: FabStationView) {
             super.initialize(view)
@@ -501,7 +501,7 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
             when {
                 isEditing -> {
                     closeEditing()
-                    activity.pushStatus(STATUS_EDIT, EditStrategy(activity))
+                    enforcer.pushStatus(STATUS_EDIT)
                 }
             }
             return false
@@ -509,7 +509,7 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
 
         override fun onPrimaryClick() {
             closeEditing()
-            activity.pushStatus(STATUS_EDIT, EditStrategy(activity))
+            enforcer.pushStatus(STATUS_EDIT)
         }
 
         override fun onTertiaryClick() {
@@ -518,16 +518,16 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
         }
 
         override fun onClockClicked() {
-            activity.pushStatus(STATUS_CLOCK, ClockStrategy(activity))
+            enforcer.pushStatus(STATUS_CLOCK)
         }
 
         override fun getStatus(): Int = STATUS_CONFIRM
     }
 
-    inner class ClockStrategy(context: MainActivity): FabStationView.OnClickStrategy(context) {
-        override fun getPrimaryDrawable() = this.activity.resources.getDrawable(R.drawable.done, activity.theme)
-        override fun getSecondaryDrawable() = this.activity.resources.getDrawable(R.drawable.cancel, activity.theme)
-        override fun getTertiaryDrawable() = this.activity.resources.getDrawable(R.drawable.bullets, activity.theme)
+    inner class ClockStrategy(enforcer: FabStationView.FabStationController): FabStationView.OnClickStrategy(enforcer) {
+        override fun getPrimaryDrawable(): Drawable? = resources.getDrawable(R.drawable.done, activity?.theme)
+        override fun getSecondaryDrawable(): Drawable? = resources.getDrawable(R.drawable.cancel, activity?.theme)
+        override fun getTertiaryDrawable(): Drawable? = resources.getDrawable(R.drawable.bullets, activity?.theme)
 
         private var startingHour: Int = 0
         private var startingMinute: Int = 0
@@ -536,8 +536,8 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
 
         override fun initialize(view: FabStationView) {
             super.initialize(view)
-            startingHour = view.clockFab.getHour()
-            startingMinute = view.clockFab.getMinute()
+            startingHour = fabStation.getHour()
+            startingMinute = fabStation.getMinute()
         }
 
         override fun shapeStation(builder: FabStationView.SetBuilder) {
@@ -554,23 +554,20 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
         }
 
         override fun onBackPressed(): Boolean {
-            fabStation.clockFab.setHour(startingHour)
-            fabStation.clockFab.setMinute(startingMinute)
+            fabStation.setHour(startingHour)
+            fabStation.setMinute(startingMinute)
 
-            activity.pushStatus(STATUS_CONFIRM, ConfirmStrategy(activity))
-
-            onExit()
+            enforcer.pushStatus(STATUS_CONFIRM)
             return false
         }
 
         override fun onPrimaryClick() {
             retrieveDate()
-            onExit()
-            activity.pushStatus(STATUS_CONFIRM, ConfirmStrategy(activity))
+            enforcer.pushStatus(STATUS_CONFIRM)
         }
 
         override fun onSecondaryClick() {
-            activity.onBackPressed()
+            activity?.onBackPressed()
         }
 
         override fun onClockClicked() {
@@ -589,29 +586,12 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
                 .apply()
         }
 
-        private fun onExit() {
-            /*view!!.alarmButton.setOnClickListener {
-                activity.pushStatus(STATUS_CLOCK, ClockStrategy(activity))
-            }*/
-        }
-
         private fun retrieveDate() {
-            val calendar = Calendar.getInstance()
-            fabStation.datePicker.apply {
-                calendar.set(Calendar.YEAR, year)
-                calendar.set(Calendar.MONTH, month)
-                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                calendar.set(Calendar.HOUR_OF_DAY, fabStation.clockFab.getHour())
-                calendar.set(Calendar.MINUTE, fabStation.clockFab.getMinute())
-            }
-            var dateTime: Long = calendar.timeInMillis
-            if (dateTime < Date().time)
-                dateTime += 24L * 60L * 60L * 1000L
+            val calendar = fabStation.getCalendar()
+            note!!.timestamp = calendar.timeInMillis
+            enforcer.scheduleAlarm(note!!.toData())
 
-            note!!.timestamp = dateTime
-            activity.scheduleAlarm(note!!.toData())
-
-            Toast.makeText(activity, "Alarm set to " + DateFormat.getInstance().format(Date(dateTime)), Toast.LENGTH_SHORT).show()
+            Toast.makeText(activity, getString(R.string.toast_alarm_set)+ DateFormat.getInstance().format(calendar.time), Toast.LENGTH_SHORT).show()
         }
     }
 

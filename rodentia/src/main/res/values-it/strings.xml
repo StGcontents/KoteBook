@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="insert_title">Inserisci un titolo…</string>
+    <string name="insert_text">Inserisci testo…</string>
+</resources>
