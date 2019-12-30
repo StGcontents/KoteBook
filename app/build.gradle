@@ -1,12 +1,18 @@
 apply plugin: 'com.android.application'
-
 apply plugin: 'kotlin-android'
-
 apply plugin: 'kotlin-kapt'
-
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'io.fabric'
 
 android {
+    signingConfigs {
+        release {
+            keyAlias = 'kotekey'
+            keyPassword 'esquirel94'
+            storeFile file('/home/sgiancristofaro/kotebook-keystore.jks')
+            storePassword 'esquirel94'
+        }
+    }
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.stgi.kotebook"
@@ -21,10 +27,13 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             applicationIdSuffix ".debug"
+            resValue 'string', 'app_name', 'KoDebug'
         }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            resValue 'string', 'app_name', 'KoteBook'
+            signingConfig signingConfigs.release
         }
     }
 }
@@ -34,14 +43,19 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.core:core-ktx:1.1.0'
+
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
+    implementation 'com.google.firebase:firebase-analytics:17.2.1'
+    implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
+
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-    def room_version = "2.2.0"
+    def room_version = '2.2.3'
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
 
@@ -55,3 +69,5 @@ dependencies {
     implementation project(':rodentia')
     implementation "org.jetbrains.kotlin:kotlin-reflect:1.3.61"
 }
+
+apply plugin: 'com.google.gms.google-services'

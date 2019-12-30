@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">KoteBook</string>
     <string name="action_settings">Settings</string>
 
     <string name="insert_title">Insert title…</string>

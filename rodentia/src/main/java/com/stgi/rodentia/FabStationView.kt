@@ -381,6 +381,8 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
          * CLOCK FAB
          */
         fun showClock(): SetBuilder {
+            if (!BuildConfig.DEBUG) return this
+
             chainedStart = object : ChainedRunnable(chainedStart) {
                 override fun runInternal() {
                     station.clockFab.asButton()
@@ -406,6 +408,8 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
         }
 
         fun hideClock(): SetBuilder {
+            if (!BuildConfig.DEBUG) return this
+
             val id = station.clockFab.id
             set.clear(id)
             set.connect(id, BOTTOM, station.primaryFab.id, BOTTOM)
@@ -416,6 +420,8 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
         }
 
         fun expandClock(): SetBuilder {
+            if (!BuildConfig.DEBUG) return this
+
             chainedStart = object : ChainedRunnable(chainedStart) {
                 override fun runInternal() {
                     if (!station.mask.isVisible) {
@@ -451,6 +457,8 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
         }
 
         fun minimizeClock(): SetBuilder {
+            if (!BuildConfig.DEBUG) return this
+
             chainedEnd = object : ChainedRunnable(chainedEnd) {
                 override fun runInternal() {
                     station.clockFab.asButton()
@@ -468,6 +476,8 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
         }
 
         fun hideDatePicker(minimize: Boolean = false): SetBuilder {
+            if (!BuildConfig.DEBUG) return this
+
             chainedStart = object : ChainedRunnable(chainedStart) {
                 override fun runInternal() {
                     station.datePickerMask.alpha = 1f
@@ -492,6 +502,8 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
         }
 
         fun expandDatePicker(): SetBuilder {
+            if (!BuildConfig.DEBUG) return this
+
             chainedStart = object : ChainedRunnable(chainedStart) {
                 override fun runInternal() {
                     station.datePickerMask.visibility = View.VISIBLE

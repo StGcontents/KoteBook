@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "427676280039",
+    "firebase_url": "https://kotebook-9ade4.firebaseio.com",
+    "project_id": "kotebook-9ade4",
+    "storage_bucket": "kotebook-9ade4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:427676280039:android:3eeeeba54079ff7907ee42",
+        "android_client_info": {
+          "package_name": "com.stgi.kotebook"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "427676280039-2om0hifjeq6rkjjar79pqmk84m1332ji.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.stgi.kotebook",
+            "certificate_hash": "08ad9eab0f78945713b9ec4aa7d153faeaab2dc1"
+          }
+        },
+        {
+          "client_id": "427676280039-qf3nvk9v92aj5f1uvdaqa8scujdgekfo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBpMw2zOcK5SBHN546zs6w_FxGIMnevAMM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "427676280039-qf3nvk9v92aj5f1uvdaqa8scujdgekfo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

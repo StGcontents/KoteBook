@@ -2,7 +2,6 @@ package com.stgi.kotebook
 
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.graphics.PorterDuff
