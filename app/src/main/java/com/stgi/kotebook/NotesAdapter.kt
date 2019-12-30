@@ -296,7 +296,7 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NotesViewHolder>(), View.
             titleTv.text = note.title
             titleTv.setTextColor(note.getTextColor())
 
-            val file = File((itemView.context as MainActivity).buildFilepath(note.text))
+            val file = File(buildFilepath(note.text))
             if (file.exists()) {
                 playerView.setContentUri(Uri.fromFile(file))
             }

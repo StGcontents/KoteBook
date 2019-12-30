@@ -410,7 +410,7 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
             view!!.playerView?.setCassetteColor(note!!.getTextColor())
         }
 
-        fun getFilepath(name: String?) = (activity as MainActivity).directory.absolutePath + "/" + name
+        fun getFilepath(name: String?) = directory.absolutePath + "/" + name
     }
 
     companion object {

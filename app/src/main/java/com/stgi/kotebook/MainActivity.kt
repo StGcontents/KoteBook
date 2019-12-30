@@ -8,18 +8,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.os.Environment
 import android.os.PersistableBundle
 import android.text.TextUtils
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.graphics.blue
-import androidx.core.graphics.green
-import androidx.core.graphics.red
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -51,8 +46,6 @@ const val LAST_STATUS = "currentStatus"
 
 private const val PERMISSIONS_REQUEST = 13
 
-const val DIRECTORY = "/KoteBook/"
-
 class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
     NotesAdapter.OnNotesChangedListener, FabStationView.FabStationController {
 
@@ -67,42 +60,15 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         return@OnTouchListener false
     }
 
-    val model: NotesModel by lazy {
+    private val model: NotesModel by lazy {
         ViewModelProviders.of(this)[NotesModel::class.java]
     }
 
-    var tmpFile: File? = null
-
-    val directory = File(Environment.getExternalStorageDirectory().absolutePath + DIRECTORY).also {
-        if (!it.exists())
-            it.mkdirs()
-    }
-
-    private fun filterNotes() = GlobalScope.launch {
-        val iterator = model.getAll().iterator()
-        while (iterator.hasNext()) {
-            val data = iterator.next()
-            if (data.isRecording && !File(buildFilepath(data.text)).exists())
-                model.remove(data)
-        }
-    }
-
-    private fun createInitialNotes() = GlobalScope.launch {
-        getPreferences(Context.MODE_PRIVATE).apply {
-            val lastInstalledVersion = getInt(LAST_INSTALLED_VERSION, 0)
-            if (lastInstalledVersion < BuildConfig.VERSION_CODE) {
-            edit().putInt(LAST_INSTALLED_VERSION, BuildConfig.VERSION_CODE).apply()
-            model.add(*NoteGenerator(this@MainActivity).generateNotes(lastInstalledVersion))
-        }
-        }
-    }
+    private var tmpFile: File? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        createInitialNotes()
-        filterNotes()
 
         rootLayout.setOnTouchListener(dismissInputListener)
         writingFrame.setOnTouchListener { _, _ -> false }
@@ -567,7 +533,6 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
     }
 
 
-    fun buildFilepath(name: String?) = directory.absolutePath + "/" + name
 
     private fun String.trimSpaces() =
         trimStart { c -> c.isWhitespace() }.dropLastWhile { c -> c.isWhitespace() }
