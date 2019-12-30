@@ -1,6 +1,7 @@
 package com.stgi.rodentia
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.TransitionDrawable
@@ -13,9 +14,13 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.constraintlayout.widget.ConstraintSet.*
+import androidx.core.graphics.blue
+import androidx.core.graphics.green
+import androidx.core.graphics.red
 import androidx.core.view.forEach
 import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.date_picker_mask.view.*
@@ -50,6 +55,27 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
         setOnTouchListener { _, ev -> if (ev!!.action == KeyEvent.ACTION_UP) strategy?.collapseFanIfNeeded(); false }
         paletteMask.setOnTouchListener { _, _ -> true }
         mask.setOnTouchListener{ _, ev -> if (ev!!.action == KeyEvent.ACTION_UP)  strategy?.onBackPressed(); true }
+
+        inputText.setTextColor(Color.WHITE)
+
+        audioEt.setTextColor(Color.WHITE)
+        audioEt.highlightColor = Color.argb(120, 0, 0, 0)
+        audioEt.setHintTextColor(
+            Color.argb(
+                120,
+                Color.WHITE.red,
+                Color.WHITE.green,
+                Color.WHITE.blue
+            )
+        )
+        audioEt.setOnFocusChangeListener { v, b ->
+            val imm = context.getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager
+            if (b) {
+                imm.showSoftInput(v, 0)
+            } else {
+                imm.hideSoftInputFromWindow(v.windowToken, 0)
+            }
+        }
 
         val set = ConstraintSet().apply { clone(this@FabStationView) }
         palette

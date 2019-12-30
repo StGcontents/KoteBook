@@ -6,4 +6,8 @@
     <string name="snackbar_message">You deleted a note.</string>
     <string name="snackbar_undo">UNDO</string>
     <string name="toast_alarm_set">Alarm set to&#32;</string>
+
+    //TUTORIAL
+    <string name="welcome_title">Welcome!</string>
+    <string name="welcome_text">Work in progress</string>
 </resources>

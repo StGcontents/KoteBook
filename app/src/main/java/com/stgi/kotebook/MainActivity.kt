@@ -37,7 +37,15 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.*
-import kotlin.random.Random
+
+const val AGOUTI = 1
+const val BEAVER = 2
+const val CAVIA = 3
+const val DORMOUSE = 4
+const val ESQUIREL = 5
+const val FLYING_SQUIRREL = 6
+
+const val LAST_INSTALLED_VERSION = "last_installed_version"
 
 const val LAST_STATUS = "currentStatus"
 
@@ -48,7 +56,7 @@ const val DIRECTORY = "/KoteBook/"
 class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
     NotesAdapter.OnNotesChangedListener, FabStationView.FabStationController {
 
-    private val adapter : NotesAdapter = NotesAdapter()
+    private val adapter: NotesAdapter = NotesAdapter()
 
     private var currentStatus: Int? = null
     var currentStrategy: FabStationView.OnClickStrategy? = null
@@ -79,34 +87,31 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         }
     }
 
+    private fun createInitialNotes() = GlobalScope.launch {
+        getPreferences(Context.MODE_PRIVATE).apply {
+            val lastInstalledVersion = getInt(LAST_INSTALLED_VERSION, 0)
+            if (lastInstalledVersion < BuildConfig.VERSION_CODE) {
+            edit().putInt(LAST_INSTALLED_VERSION, BuildConfig.VERSION_CODE).apply()
+            model.add(*NoteGenerator(this@MainActivity).generateNotes(lastInstalledVersion))
+        }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        createInitialNotes()
         filterNotes()
 
         rootLayout.setOnTouchListener(dismissInputListener)
         writingFrame.setOnTouchListener { _, _ -> false }
         bgView.setOnTouchListener { _, _ -> true }
 
-        inputText.setTextColor(Color.WHITE)
-
-        audioEt.setTextColor(Color.WHITE)
-        audioEt.hint = getString(R.string.insert_title)
-        audioEt.highlightColor = Color.argb(120, 0, 0, 0)
-        audioEt.setHintTextColor(Color.argb(120, Color.WHITE.red, Color.WHITE.green, Color.WHITE.blue))
-        audioEt.setOnFocusChangeListener { v, b ->
-            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-            if (b) {
-                imm.showSoftInput(v, 0)
-            } else {
-                imm.hideSoftInputFromWindow(v.windowToken, 0)
-            }
-        }
-
         adapter.onNotesChangedListener = this
         notesRecycler.adapter = adapter
-        notesRecycler.layoutManager = getStaggeredLayout(resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
+        notesRecycler.layoutManager =
+            getStaggeredLayout(resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
         notesRecycler.setOnTouchListener(dismissInputListener)
         notesRecycler.addOnItemTouchListener(object : RecyclerView.OnItemTouchListener {
             override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
@@ -120,8 +125,8 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
                 return false
             }
 
-            override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) { }
-            override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) { }
+            override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
+            override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {}
         })
     }
 
@@ -133,7 +138,8 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
                     ?.sortedWith(compareBy({ !it.pinned }, { it.id })))
             })
 
-        getPreferences(Context.MODE_PRIVATE).getInt(LAST_STATUS,
+        getPreferences(Context.MODE_PRIVATE).getInt(
+            LAST_STATUS,
             STATUS_INIT
         ).apply {
             pushStatus(this)
@@ -174,9 +180,14 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
         super.onRestoreInstanceState(savedInstanceState)
-        savedInstanceState?.let { pushStatus(it.getInt(LAST_STATUS,
-            STATUS_INIT
-        )) }
+        savedInstanceState?.let {
+            pushStatus(
+                it.getInt(
+                    LAST_STATUS,
+                    STATUS_INIT
+                )
+            )
+        }
     }
 
     private fun getStaggeredLayout(portrait: Boolean) =
@@ -189,7 +200,12 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
                 inputText.setText("")
                 if (TextUtils.isEmpty(str))
                     return
-                model.add(Note.NoteData(text = str, color = RandomColor().gen()))
+                model.add(
+                    Note.NoteData(
+                        text = str,
+                        color = NoteGenerator(this).generateRandomColor()
+                    )
+                )
             }
             STATUS_SAVE_REC -> audioEt.text = null
         }
@@ -218,7 +234,7 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         }
     }
 
-    fun showEditFragment(note : Note, view : View) {
+    fun showEditFragment(note: Note, view: View) {
         fabStation.setClockTo(note.timestamp)
         pushStatus(STATUS_INTERIM)
         val fragment = EditFragment.newInstance(note, view)
@@ -293,14 +309,20 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO)
             != PackageManager.PERMISSION_GRANTED ||
             checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            != PackageManager.PERMISSION_GRANTED) {
+            != PackageManager.PERMISSION_GRANTED
+        ) {
             /*if (shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO)) {
                 // Show an explanation to the user *asynchronously* -- don't block
                 // this thread waiting for the user's response! After the user
                 // sees the explanation, try again to request the permission.
                 Toast.makeText(this, "Take audio notes", Toast.LENGTH_LONG).show()
             } else */
-            requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE), PERMISSIONS_REQUEST)
+            requestPermissions(
+                arrayOf(
+                    Manifest.permission.RECORD_AUDIO,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ), PERMISSIONS_REQUEST
+            )
             return false
         } else {
             pushStatus(STATUS_RECORDING)
@@ -328,9 +350,11 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
             tmpFile?.delete()
             tmpFile = null
 
-            val data = Note.NoteData(title = newFile.nameWithoutExtension,
+            val data = Note.NoteData(
+                title = newFile.nameWithoutExtension,
                 text = newFile.name, pinned = false,
-                color = RandomColor().gen(), isRecording = true)
+                color = NoteGenerator(this@MainActivity).generateRandomColor(), isRecording = true
+            )
             model.add(data)
         }
     }
@@ -343,7 +367,8 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
 
         val intent = Intent(
             this,
-            NotificationService::class.java)
+            NotificationService::class.java
+        )
             .putExtra(ID, data.uid)
             .putExtra(TITLE, data.title)
             .putExtra(TEXT, data.text)
@@ -399,7 +424,7 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         }
     }
 
-    inner class InitStrategy(context: MainActivity): FabStationView.OnClickStrategy(context) {
+    inner class InitStrategy(context: MainActivity) : FabStationView.OnClickStrategy(context) {
         override fun getPrimaryDrawable(): Drawable? = resources.getDrawable(R.drawable.add, theme)
         override fun initialize(view: FabStationView) {
             super.initialize(view)
@@ -410,6 +435,8 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
             super.shapeStation(builder)
             builder.showPrimary()
                 .retractPrimary()
+                .hideTextInput()
+                .hideAudioInput()
                 .hideSecondary()
                 .hideTertiary()
                 .showSwipe()
@@ -430,7 +457,7 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         override fun onSwiped(): Boolean = this@MainActivity.onSwiped()
     }
 
-    inner class AnnotateStrategy(context: MainActivity): FabStationView.OnClickStrategy(context) {
+    inner class AnnotateStrategy(context: MainActivity) : FabStationView.OnClickStrategy(context) {
         override fun getPrimaryDrawable(): Drawable? = getDrawable(R.drawable.done)
         override fun getSecondaryDrawable(): Drawable? = getDrawable(R.drawable.bullets)
 
@@ -461,7 +488,7 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         override fun getStatus(): Int = STATUS_ANNOTATE
     }
 
-    inner class RecStrategy(context: MainActivity): FabStationView.OnClickStrategy(context) {
+    inner class RecStrategy(context: MainActivity) : FabStationView.OnClickStrategy(context) {
         override fun getPrimaryDrawable(): Drawable? = getDrawable(R.drawable.stop)
         override fun isDismissible() = false
 
@@ -490,11 +517,16 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
 
         override fun getStatus(): Int = STATUS_RECORDING
 
-        override fun onRelease() { this@MainActivity.onRelease() }
-        override fun onAutoRelease() { this@MainActivity.onAutoRelease() }
+        override fun onRelease() {
+            this@MainActivity.onRelease()
+        }
+
+        override fun onAutoRelease() {
+            this@MainActivity.onAutoRelease()
+        }
     }
 
-    inner class SaveRecStrategy(context: MainActivity): FabStationView.OnClickStrategy(context) {
+    inner class SaveRecStrategy(context: MainActivity) : FabStationView.OnClickStrategy(context) {
         override fun getPrimaryDrawable(): Drawable? = getDrawable(R.drawable.done)
         override fun getSecondaryDrawable(): Drawable? = getDrawable(R.drawable.cancel)
 
@@ -537,14 +569,6 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
 
     fun buildFilepath(name: String?) = directory.absolutePath + "/" + name
 
-    private fun String.trimSpaces() = trimStart { c -> c.isWhitespace() }.dropLastWhile { c -> c.isWhitespace() }
-
-    inner class RandomColor {
-        fun gen() : Int {
-            val gen = Random(Date().time)
-            return resources.getColor(
-                palette[gen.nextInt(
-                    palette.size)], theme)
-        }
-    }
+    private fun String.trimSpaces() =
+        trimStart { c -> c.isWhitespace() }.dropLastWhile { c -> c.isWhitespace() }
 }

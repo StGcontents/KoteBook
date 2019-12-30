@@ -7,4 +7,8 @@
     <string name="snackbar_message">Hai rimosso una nota.</string>
     <string name="snackbar_undo">ANNULLA</string>
     <string name="toast_alarm_set">Promemoria fissato per:&#32;</string>
+
+    //TUTORIAL
+    <string name="welcome_title">Benvenuto!</string>
+    <string name="welcome_text">In allestimento</string>
 </resources>

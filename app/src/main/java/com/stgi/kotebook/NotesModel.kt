@@ -28,7 +28,7 @@ class NotesModel(application: Application) : AndroidViewModel(application) {
         Thread(Runnable { db.notesDao().delete(note) }).start()
     }
 
-    fun add(note: Note.NoteData) {
-        Thread(Runnable { db.notesDao().insertAll(note) }).start()
+    fun add(vararg notes: Note.NoteData) {
+        Thread(Runnable { db.notesDao().insertAll(*notes) }).start()
     }
 }
