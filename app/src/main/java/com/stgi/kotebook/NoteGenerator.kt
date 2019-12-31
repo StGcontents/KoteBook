@@ -94,9 +94,7 @@ class NoteGenerator(private val context: Context) {
     ): Note.NoteData = Note.NoteData(title = title, text = text, color = color, isRecording = isRecording, pinned = isPinned)
 
     fun generateRandomColor() : Int {
-        val gen = Random(Date().time)
         return context.resources.getColor(
-            palette[gen.nextInt(
-                palette.size)], context.theme)
+            palette[random.nextInt(palette.size)], context.theme)
     }
 }
