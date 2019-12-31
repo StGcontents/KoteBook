@@ -134,6 +134,8 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         super.onResume()
         model.notes.observe(this,
             Observer<List<Note.NoteData>> { t ->
+                if (t.isEmpty()) emptyPlaceholder.fadeIn()
+                else emptyPlaceholder.visibility = View.GONE
                 adapter.setData(t?.map { Note(it) }
                     ?.sortedWith(compareBy({ !it.pinned }, { it.id })))
             })
@@ -224,6 +226,18 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
     fun FabStationView.show() {
         animate().cancel()
         animate().translationY(0f).start()
+    }
+
+    private fun View.fadeIn(duration: Long = 250L) {
+        animate().cancel()
+
+        alpha = 0f
+        visibility = View.VISIBLE
+
+        animate()
+            .alpha(1f)
+            .setDuration(duration)
+            .start()
     }
 
     private fun hideAllOptionsBesides(v: View?) {

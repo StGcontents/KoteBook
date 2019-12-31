@@ -11,4 +11,8 @@
     //TUTORIAL
     <string name="welcome_title">Benvenuto!</string>
     <string name="welcome_text">In allestimento</string>
+
+
+    <string name="empty_text_title">Non ci sono note qui!</string>
+    <string name="empty_text_subtitle">Perché non ne scrivi qualcuna o registri un pensiero?</string>
 </resources>

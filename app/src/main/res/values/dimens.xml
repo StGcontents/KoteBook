@@ -41,4 +41,6 @@
     <dimen name="half_shown_margin">32dp</dimen>
     <dimen name="date_picker_mask_size">48dp</dimen>
     <dimen name="clock_elevation">2dp</dimen>
+    <dimen name="empty_title_sp">24sp</dimen>
+    <dimen name="empty_subtitle_sp">20sp</dimen>
 </resources>

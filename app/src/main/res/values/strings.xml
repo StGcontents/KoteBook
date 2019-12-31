@@ -10,4 +10,8 @@
     //TUTORIAL
     <string name="welcome_title">Welcome!</string>
     <string name="welcome_text">Work in progress</string>
+
+
+    <string name="empty_text_title">Seems like there\'s no notes here!</string>
+    <string name="empty_text_subtitle">Why don\'t you write one or record some thoughts?</string>
 </resources>
