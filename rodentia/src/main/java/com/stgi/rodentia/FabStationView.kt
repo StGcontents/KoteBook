@@ -9,10 +9,7 @@ import android.transition.ChangeBounds
 import android.transition.Transition
 import android.transition.TransitionManager
 import android.util.AttributeSet
-import android.view.KeyEvent
-import android.view.LayoutInflater
-import android.view.MotionEvent
-import android.view.View
+import android.view.*
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -91,7 +88,7 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
                         )
                         elevation = resources.getDimension(R.dimen.small_fab_elevation)
                         val size = resources.getDimensionPixelSize(R.dimen.small_fab_size)
-                        layoutParams = LayoutParams(size, size)
+                        layoutParams = ViewGroup.LayoutParams(size, size)
                     }
 
                 paletteItem.setOnTouchListener(this)

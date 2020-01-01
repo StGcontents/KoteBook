@@ -18,10 +18,15 @@ import android.view.inputmethod.EditorInfo
 import android.widget.*
 
 
-class BulletPointView(context: Context, attrs: AttributeSet?, private val isInteractive: Boolean = true) : LinearLayout(context, attrs) {
+class BulletPointView(context: Context, attrs: AttributeSet?) : LinearLayout(context, attrs) {
     val cb: CheckBox
     private val et: EditText?
     private val tv: TextView?
+    private var isInteractive: Boolean = true
+
+    constructor(context: Context, attrs: AttributeSet?, isInteractive: Boolean): this(context, attrs) {
+        this.isInteractive = isInteractive
+    }
 
     private fun applyIsInteractive(allowCheckBox: Boolean = true) {
         cb.isClickable = isInteractive || allowCheckBox

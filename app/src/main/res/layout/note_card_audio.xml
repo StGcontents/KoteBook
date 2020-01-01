@@ -91,7 +91,7 @@
 
         <ImageButton
             android:layout_marginBottom="4dp"
-            android:id="@+id/pinButton"
+            android:id="@+id/btnPin"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:background="@null"
@@ -101,7 +101,7 @@
             android:src="@drawable/smart_pin" />
 
         <ImageButton
-            android:id="@+id/removeButton"
+            android:id="@+id/btnRmv"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:background="@null"

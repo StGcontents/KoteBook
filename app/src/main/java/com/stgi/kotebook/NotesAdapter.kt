@@ -6,22 +6,18 @@ import android.graphics.PorterDuff
 import android.net.Uri
 import android.view.*
 import android.widget.CheckBox
-import android.widget.CompoundButton
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.stgi.rodentia.*
+import com.stgi.rodentia.CassettePlayerView
+import kotlinx.android.synthetic.main.card_base.view.*
 import kotlinx.android.synthetic.main.note_card_audio.view.*
-import kotlinx.android.synthetic.main.note_card_bulleted.view.*
 import java.io.File
 
 private const val NOTE_TYPE_AUDIO = R.layout.note_card_audio
 private const val NOTE_TYPE_BASE = R.layout.note_card
-private const val NOTE_TYPE_TITLE = R.layout.note_card_with_title
-private const val NOTE_TYPE_BULLETS = R.layout.note_card_bulleted
-private const val NOTE_TYPE_BULLETED_TITLE = R.layout.note_card_bulleted_with_title
 
 class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NotesViewHolder>(), View.OnClickListener {
     private val items = mutableListOf<Note>()
@@ -44,10 +40,6 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NotesViewHolder>(), View.
         val note = items[position]
         return when {
             note.isRecording -> NOTE_TYPE_AUDIO
-            note.title.isNotEmpty() && note.text?.any { c -> c == BULLET_POINT_FULL || c == BULLET_POINT_EMPTY }!! ->
-                NOTE_TYPE_BULLETED_TITLE
-            note.title.isNotEmpty() -> NOTE_TYPE_TITLE
-            note.text?.any { c -> c == BULLET_POINT_FULL || c == BULLET_POINT_EMPTY }!! -> NOTE_TYPE_BULLETS
             else -> NOTE_TYPE_BASE
         }
     }
@@ -137,8 +129,8 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NotesViewHolder>(), View.
 
         protected var note : Note? = null
 
-        private val rmvButton : ImageButton = itemView.findViewById(R.id.removeButton)
-        private val pinButton : ImageButton = itemView.findViewById(R.id.pinButton)
+        private val rmvButton : ImageButton = itemView.findViewById(R.id.btnRmv)
+        private val pinButton : ImageButton = itemView.findViewById(R.id.btnPin)
         private val options : ViewGroup = itemView.findViewById(R.id.options)
 
         private val hideRunnable = Runnable { hideOptions() }
@@ -264,8 +256,10 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NotesViewHolder>(), View.
         open fun bind(note: Note) {
             this.note = note
 
-            itemView as CardView
-            itemView.setCardBackgroundColor(note.getColor())
+            if (itemView is CardView)
+                itemView.setCardBackgroundColor(note.getColor())
+            else
+                itemView.setBackgroundColor(note.getColor())
 
             rmvButton.setColorFilter(note.getTextColor(), PorterDuff.Mode.SRC_ATOP)
             pinButton.setColorFilter(note.getTextColor(), PorterDuff.Mode.SRC_ATOP)
@@ -306,102 +300,15 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NotesViewHolder>(), View.
     }
 
     inner class TextViewHolder(itemView : View, cl : View.OnClickListener) : NotesViewHolder(itemView, cl) {
-        private val titleTv : TextView = itemView.findViewById(R.id.noteTitleTv)
-        private val textTv : TextView = itemView.findViewById(R.id.noteTv)
-
         override fun bind(note : Note) {
             super.bind(note)
 
-            if (note.title.isNotEmpty()) {
-                titleTv.visibility = View.VISIBLE
-                titleTv.text = note.title
-            } else {
-                titleTv.visibility = View.GONE
-                titleTv.text = ""
-            }
-            titleTv.setTextColor(note.getTextColor())
-            textTv.setTextColor(note.getTextColor())
-
-            val trimmedStr = note.text!!.trimSpaces()
-            val indexOfFirstBullet = trimmedStr.indexOfFirst { c -> c == BULLET_POINT_FULL || c == BULLET_POINT_EMPTY }
-            textTv.visibility = if (indexOfFirstBullet == 0) View.GONE else View.VISIBLE
-            if (itemView.bulletContainer != null) itemView.bulletContainer.removeAllBullets()
-
-            if (indexOfFirstBullet < 0) {
-                textTv.text = trimmedStr
-            } else {
-                textTv.text = trimmedStr.subSequence(0, indexOfFirstBullet).toString().trimSpaces()
-                val bullets = note.text?.split(Regex(BULLET_POINT_SPLIT))!!.filter { s ->
-                    s.startsWith(BULLET_POINT_EMPTY) || s.startsWith(BULLET_POINT_FULL)
-                }
-                addBulletPoints(bullets)
-            }
-        }
-
-        private fun addBulletPoints(bullets: List<String>) {
-            val availableSpace = itemView.context.resources.getDimension(R.dimen.card_max_height).toInt()
-            val bulletCount = bullets.size
-            val allowedCount =
-                availableSpace / itemView.context.resources.getDimension(R.dimen.bullet_point_height).toInt()
-
-            var counter: Int = allowedCount
-            bullets.forEach {
-                if (counter <= 0) return@forEach
-
-                val v = BulletPointView(itemView.context, null, false)
-                v.setIsChecked(it[0] == BULLET_POINT_FULL)
-                v.setText(it.substring(1).trimSpaces())
-                v.setMaxLines(2)
-                v.setTextColor(note!!.getTextColor())
-                v.setIsChecked(it[0] == BULLET_POINT_FULL)
-                v.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { _, isChecked ->
-                    var charCounter = 0
-                    var bulletCounter = 0
-                    var charPosition = 0
-                    val position = bullets.indexOf(it)
-                    note!!.text!!.forEach { c ->
-                        if (c == BULLET_POINT_EMPTY || c == BULLET_POINT_FULL) {
-                            if (bulletCounter == position) {
-                                charPosition = charCounter
-                            }
-                            bulletCounter++
-                        }
-                        charCounter++
-                    }
-
-                    val newBullet = if (isChecked) BULLET_POINT_FULL else BULLET_POINT_EMPTY
-                    val builder = StringBuilder(note!!.text!!)
-                    builder.setCharAt(charPosition, newBullet)
-                    val editedText = builder.toString()
-                    val data = note!!.toData()
-                    data.text = editedText
-
-                    onNotesChangedListener?.onNoteUpdated(data)
-                })
-                itemView.bulletContainer.addView(v)
-
-                counter--
-            }
-
-            if (allowedCount < bulletCount) {
-                itemView.ellipsisTv?.setTextColor(textTv.currentTextColor)
-                itemView.ellipsisTv?.visibility = View.VISIBLE
-            } else {
-                itemView.ellipsisTv?.visibility = View.GONE
-            }
-        }
-
-        private fun ViewGroup.removeAllBullets() {
-            while (childCount > 1) {
-                val child = getChildAt(childCount - 1)
-                if (child is BulletPointView || (child is TextView && child.text == "..."))
-                    removeViewAt(childCount - 1)
-            }
-            if (getChildAt(0) is BulletPointView)
-                removeViewAt(0)
+             itemView as NoteCardView
+                itemView.setTextColor(note.getTextColor())
+                itemView.shapeShift().apply {
+                    title = note.title
+                    text = note.text!!
+                }.apply()
         }
     }
-
-
-    fun String.trimSpaces() = trimStart { c -> c.isWhitespace() }.dropLastWhile { c -> c.isWhitespace() }
 }

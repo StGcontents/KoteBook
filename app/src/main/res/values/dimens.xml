@@ -11,7 +11,7 @@
 
     <!-- Cards -->
     <dimen name="card_min_height">64dp</dimen>
-    <dimen name="card_max_height">160dp</dimen>
+    <dimen name="card_max_height">256dp</dimen>
 
     <!-- SPs -->
     <dimen name="note_text_sp">16sp</dimen>
@@ -41,4 +41,5 @@
     <dimen name="half_shown_margin">32dp</dimen>
     <dimen name="date_picker_mask_size">48dp</dimen>
     <dimen name="clock_elevation">2dp</dimen>
+    <dimen name="base_card_margin">8dp</dimen>
 </resources>
