@@ -281,7 +281,6 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NotesViewHolder>(), View.
         override fun getWrapper(cl: View.OnClickListener) = object : AbstractListenerDecorator(cl) {
             override fun decorate() {
                 scheduleHideOptions()
-                //playerView.stop()
             }
         }
 

@@ -89,7 +89,9 @@ class NoteCardView(context: Context, attributeSet: AttributeSet?): ConstraintLay
     override fun setBackgroundColor(color: Int) {
         background.setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
 
-        val optionsGradient = GradientDrawable(GradientDrawable.Orientation.RIGHT_LEFT, intArrayOf(color, color, color, color, Color.TRANSPARENT)).apply {
+        val optionsGradient = GradientDrawable(
+            GradientDrawable.Orientation.RIGHT_LEFT,
+            intArrayOf(color, color, color, color, Color.TRANSPARENT)).apply {
             cornerRadius = getDimen(R.dimen.base_card_margin)
         }
         options.background = optionsGradient

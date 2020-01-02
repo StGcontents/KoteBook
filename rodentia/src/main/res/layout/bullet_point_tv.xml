@@ -8,6 +8,5 @@
     android:layout_marginStart="@dimen/bullet_point_et_margin"
     android:ellipsize="end"
     android:text=""
+    android:fontFamily="sans-serif-light"
     xmlns:android="http://schemas.android.com/apk/res/android" />
-
-<!-- android:layout_marginBottom="@dimen/bullet_point_et_margin" -->

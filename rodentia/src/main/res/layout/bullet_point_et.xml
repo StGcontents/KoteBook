@@ -10,6 +10,7 @@
     android:layout_marginStart="@dimen/bullet_point_et_margin"
     android:ellipsize="end"
     android:text=""
+    android:fontFamily="sans-serif-light"
     android:background="@null"
     xmlns:android="http://schemas.android.com/apk/res/android" />
 

@@ -35,6 +35,7 @@
             android:hint="@string/insert_title"
             android:textCursorDrawable="@null"
             android:inputType="textNoSuggestions"
+            android:fontFamily="sans-serif"
             android:maxLength="24"
             android:gravity="start|top"
             android:textStyle="italic|bold"

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="visualizer_item_size">2dp</dimen>
-    <dimen name="note_text_sp">16sp</dimen>
+    <dimen name="note_text_sp">18sp</dimen>
 
     <dimen name="bullet_point_start_padding">-6dp</dimen>
     <dimen name="bullet_point_editor_top_margin">12sp</dimen>
@@ -25,7 +25,7 @@
     <dimen name="card_max_height">160dp</dimen>
 
     <!-- SPs -->
-    <dimen name="note_title_sp">20sp</dimen>
+    <dimen name="note_title_sp">22sp</dimen>
     <dimen name="card_margin">8dp</dimen>
     <dimen name="card_corners">8dp</dimen>
     <dimen name="card_text_margin">16dp</dimen>

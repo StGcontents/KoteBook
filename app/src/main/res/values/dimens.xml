@@ -10,12 +10,12 @@
     <dimen name="writing_title_margin">16dp</dimen>
 
     <!-- Cards -->
-    <dimen name="card_min_height">64dp</dimen>
+    <dimen name="card_min_height">72dp</dimen>
     <dimen name="card_max_height">256dp</dimen>
 
     <!-- SPs -->
-    <dimen name="note_text_sp">16sp</dimen>
-    <dimen name="note_title_sp">20sp</dimen>
+    <dimen name="note_text_sp">18sp</dimen>
+    <dimen name="note_title_sp">22sp</dimen>
     <dimen name="card_margin">8dp</dimen>
     <dimen name="card_corners">8dp</dimen>
     <dimen name="card_text_margin">16dp</dimen>
@@ -45,9 +45,10 @@
     <dimen name="ellipsis_margin_bottom">4dp</dimen>
     <dimen name="gradient_solid_size">16dp</dimen>
     <dimen name="gradient_size">48dp</dimen>
-    <dimen name="note_button_size">32dp</dimen>
+    <dimen name="note_button_size">36dp</dimen>
     <dimen name="note_button_padding">4dp</dimen>
     <dimen name="note_title_size">24dp</dimen>
     <dimen name="text_guideline">40dp</dimen>
     <dimen name="recycler_bottom_padding">80dp</dimen>
+    <dimen name="snackbar_height">40dp</dimen>
 </resources>

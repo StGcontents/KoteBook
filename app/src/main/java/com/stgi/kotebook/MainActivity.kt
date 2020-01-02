@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Environment
@@ -17,9 +16,6 @@ import android.text.TextUtils
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.graphics.blue
-import androidx.core.graphics.green
-import androidx.core.graphics.red
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -91,9 +87,9 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         getPreferences(Context.MODE_PRIVATE).apply {
             val lastInstalledVersion = getInt(LAST_INSTALLED_VERSION, 0)
             if (lastInstalledVersion < BuildConfig.VERSION_CODE) {
-            edit().putInt(LAST_INSTALLED_VERSION, BuildConfig.VERSION_CODE).apply()
-            model.add(*NoteGenerator(this@MainActivity).generateNotes(lastInstalledVersion))
-        }
+                edit().putInt(LAST_INSTALLED_VERSION, BuildConfig.VERSION_CODE).apply()
+                model.add(*NoteGenerator(this@MainActivity).generateNotes(lastInstalledVersion))
+            }
         }
     }
 
@@ -209,21 +205,6 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
             }
             STATUS_SAVE_REC -> audioEt.text = null
         }
-    }
-
-    fun FabStationView.hide() {
-        post {
-            animate().cancel()
-            animate().apply {
-                translationY(height.toFloat())
-                start()
-            }
-        }
-    }
-
-    fun FabStationView.show() {
-        animate().cancel()
-        animate().translationY(0f).start()
     }
 
     private fun hideAllOptionsBesides(v: View?) {
@@ -428,7 +409,6 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         override fun getPrimaryDrawable(): Drawable? = resources.getDrawable(R.drawable.add, theme)
         override fun initialize(view: FabStationView) {
             super.initialize(view)
-            fabStation.show()
         }
 
         override fun shapeStation(builder: FabStationView.SetBuilder) {
