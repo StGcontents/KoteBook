@@ -111,7 +111,6 @@
         android:id="@+id/gradient"
         android:layout_width="0dp"
         android:layout_height="@dimen/gradient_size"
-        android:layout_marginBottom="@dimen/gradient_solid_size"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
