@@ -20,9 +20,9 @@
         android:id="@+id/titleFrame"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="@dimen/writing_title_margin"
-        android:layout_marginStart="@dimen/writing_title_margin"
-        android:layout_marginEnd="@dimen/writing_title_margin"
+        android:layout_marginTop="@dimen/base_card_margin"
+        android:layout_marginStart="@dimen/base_card_margin"
+        android:layout_marginEnd="@dimen/base_card_margin"
         app:layout_constraintStart_toStartOf="@+id/fakeView"
         app:layout_constraintEnd_toEndOf="@+id/fakeView"
         app:layout_constraintTop_toTopOf="@+id/fakeView">

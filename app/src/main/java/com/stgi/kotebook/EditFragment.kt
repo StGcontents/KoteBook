@@ -199,6 +199,8 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
         set.constrainWidth(fakeView.id, 0)
 
         set.constrainHeight(titleFrame.id, WRAP_CONTENT)
+        set.connect(titleFrame.id, START, PARENT_ID, START, getPixels(R.dimen.writing_title_margin))
+        set.connect(titleFrame.id, TOP, PARENT_ID, TOP, getPixels(R.dimen.writing_title_margin))
 
         applyFinalConstraintsInternal(set, duration)
 
@@ -325,15 +327,17 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
         override fun onFinalConstraintsSet(view: View) { }
 
         override fun applyStartingConstraintsInternal(set: ConstraintSet, duration: Long) {
-            startMarginAnimator(bulletPointScrollView, R.dimen.bullet_point_editor_end_margin_fullscreen, R.dimen.bullet_point_editor_end_margin_init, duration)
-
-            set.connect(bulletPointScrollView.id, START, fakeView.id, START)
-            set.connect(bulletPointScrollView.id, TOP, titleFrame.id, BOTTOM)
-            set.connect(bulletPointScrollView.id, BOTTOM, fakeView.id, BOTTOM)
+            set.connect(bulletPointScrollView.id, START, fakeView.id, START, getPixels(R.dimen.bullet_point_editor_end_margin_init))
+            set.connect(bulletPointScrollView.id, END, fakeView.id, END, getPixels(R.dimen.bullet_point_editor_end_margin_init))
+            set.connect(bulletPointScrollView.id, TOP, titleFrame.id, BOTTOM, getPixels(R.dimen.bullet_point_editor_end_margin_init))
+            set.connect(bulletPointScrollView.id, BOTTOM, fakeView.id, BOTTOM, getPixels(R.dimen.bullet_point_editor_end_margin_init))
         }
 
         override fun applyFinalConstraintsInternal(set: ConstraintSet, duration: Long) {
-            startMarginAnimator(bulletPointScrollView, R.dimen.bullet_point_editor_end_margin_init, R.dimen.bullet_point_editor_end_margin_fullscreen, duration)
+            set.connect(bulletPointScrollView.id, START, fakeView.id, START, getPixels(R.dimen.bullet_point_editor_end_margin_fullscreen))
+            set.connect(bulletPointScrollView.id, END, fakeView.id, END, getPixels(R.dimen.bullet_point_editor_end_margin_fullscreen))
+            set.connect(bulletPointScrollView.id, TOP, titleFrame.id, BOTTOM, getPixels(R.dimen.bullet_point_editor_end_margin_fullscreen))
+            set.connect(bulletPointScrollView.id, BOTTOM, fakeView.id, BOTTOM, getPixels(R.dimen.bullet_point_editor_end_margin_fullscreen))
         }
 
         override fun openEditingInternal() { }

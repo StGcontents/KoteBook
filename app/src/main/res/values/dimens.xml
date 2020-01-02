@@ -23,7 +23,7 @@
     <dimen name="card_text_min_height">32dp</dimen>
     <dimen name="card_title_min_height">64dp</dimen>
     <dimen name="card_text_top_margin">8dp</dimen>
-    <dimen name="bullet_point_editor_end_margin_init">32dp</dimen>
+    <dimen name="bullet_point_editor_end_margin_init">8dp</dimen>
     <dimen name="bullet_point_editor_end_margin_fullscreen">16dp</dimen>
     <dimen name="card_text_margin_bottom">8dp</dimen>
     <dimen name="bullet_point_height">32dp</dimen>
@@ -42,4 +42,12 @@
     <dimen name="date_picker_mask_size">48dp</dimen>
     <dimen name="clock_elevation">2dp</dimen>
     <dimen name="base_card_margin">8dp</dimen>
+    <dimen name="ellipsis_margin_bottom">4dp</dimen>
+    <dimen name="gradient_solid_size">16dp</dimen>
+    <dimen name="gradient_size">48dp</dimen>
+    <dimen name="note_button_size">32dp</dimen>
+    <dimen name="note_button_padding">4dp</dimen>
+    <dimen name="note_title_size">24dp</dimen>
+    <dimen name="text_guideline">40dp</dimen>
+    <dimen name="recycler_bottom_padding">80dp</dimen>
 </resources>

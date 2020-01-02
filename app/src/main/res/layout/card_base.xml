@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="64dp"
+    android:minHeight="@dimen/card_min_height"
     >
 
     <androidx.constraintlayout.widget.Guideline
@@ -15,7 +15,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintGuide_begin="8dp"/>
+        app:layout_constraintGuide_begin="@dimen/base_card_margin"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/textGuideline"
@@ -26,7 +26,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintGuide_begin="40dp"/>
+        app:layout_constraintGuide_begin="@dimen/text_guideline"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/ellipsisGuideline"
@@ -38,143 +38,79 @@
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="0dp"
-        android:layout_height="24dp"
-        android:text="TITLE"
+        android:layout_height="@dimen/note_title_size"
         android:textStyle="italic|bold"
         android:maxLines="1"
         android:ellipsize="end"
-        android:textSize="22sp"
+        android:textSize="@dimen/note_title_sp"
         android:gravity="center_vertical|start"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginStart="@dimen/base_card_margin"
+        android:layout_marginEnd="@dimen/base_card_margin"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/titleGuideline"
-        app:layout_constraintEnd_toStartOf="@+id/options"
+        app:layout_constraintEnd_toEndOf="parent"
         />
 
     <TextView
         android:id="@+id/tvNote"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginStart="@dimen/base_card_margin"
+        android:layout_marginEnd="@dimen/base_card_margin"
+        android:layout_marginTop="@dimen/base_card_margin"
+        android:layout_marginBottom="@dimen/base_card_margin"
         android:ellipsize="end"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="dafodsfosdifjsdpf"
-        android:textSize="16sp"
+        android:textSize="@dimen/note_text_sp"
         android:gravity="center_vertical|start"
-        app:layout_constraintTop_toTopOf="@+id/textGuideline"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/options"
-        />
-
-    <com.stgi.rodentia.BulletPointView
-        android:id="@+id/bpZero"
-        android:layout_width="0dp"
-        android:layout_height="20dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="8dp"
-        android:visibility="gone"
-        android:tag="0"
+        app:layout_constraintTop_toBottomOf="@+id/tvTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvNote" />
-
-    <com.stgi.rodentia.BulletPointView
-        android:id="@+id/bpOne"
-        android:layout_width="0dp"
-        android:layout_height="20dp"
-        android:visibility="gone"
-        android:tag="1"
-        app:layout_constraintStart_toStartOf="@+id/bpZero"
-        app:layout_constraintEnd_toEndOf="@+id/bpZero"
-        app:layout_constraintTop_toBottomOf="@+id/bpZero" />
-
-    <com.stgi.rodentia.BulletPointView
-        android:id="@+id/bpTwo"
-        android:layout_width="0dp"
-        android:layout_height="20dp"
-        android:visibility="gone"
-        android:tag="2"
-        app:layout_constraintStart_toStartOf="@+id/bpZero"
-        app:layout_constraintEnd_toEndOf="@+id/bpZero"
-        app:layout_constraintTop_toBottomOf="@+id/bpOne" />
-
-    <com.stgi.rodentia.BulletPointView
-        android:id="@+id/bpThree"
-        android:layout_width="0dp"
-        android:layout_height="20dp"
-        android:visibility="gone"
-        android:tag="3"
-        app:layout_constraintStart_toStartOf="@+id/bpZero"
-        app:layout_constraintEnd_toEndOf="@+id/bpZero"
-        app:layout_constraintTop_toBottomOf="@+id/bpTwo" />
-
-    <com.stgi.rodentia.BulletPointView
-        android:id="@+id/bpFour"
-        android:layout_width="0dp"
-        android:layout_height="20dp"
-        android:visibility="gone"
-        android:tag="4"
-        app:layout_constraintStart_toStartOf="@+id/bpZero"
-        app:layout_constraintEnd_toEndOf="@+id/bpZero"
-        app:layout_constraintTop_toBottomOf="@+id/bpThree" />
+        />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/options"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:paddingStart="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-    <ImageButton
-        android:padding="4dp"
-        android:id="@+id/btnPin"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:background="@null"
-        android:rotation="45"
-        android:alpha="0.5"
-        android:tag="pin"
-        android:scaleType="centerInside"
-        android:src="@drawable/smart_pin"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        />
+        <ImageButton
+            android:padding="@dimen/note_button_padding"
+            android:id="@+id/btnPin"
+            android:layout_width="@dimen/note_button_size"
+            android:layout_height="@dimen/note_button_size"
+            android:background="@null"
+            android:rotation="45"
+            android:alpha="0.5"
+            android:tag="pin"
+            android:scaleType="centerInside"
+            android:src="@drawable/smart_pin"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
 
-    <ImageButton
-        android:id="@+id/btnRmv"
-        android:padding="4dp"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:background="@null"
-        android:alpha="0.5"
-        android:tag="rmv"
-        android:src="@drawable/delete"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnPin"
-        android:scaleType="centerInside"/>
+        <ImageButton
+            android:id="@+id/btnRmv"
+            android:padding="@dimen/note_button_padding"
+            android:layout_width="@dimen/note_button_size"
+            android:layout_height="@dimen/note_button_size"
+            android:alpha="0.5"
+            android:background="@null"
+            android:tag="rmv"
+            android:src="@drawable/delete"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnPin"
+            android:scaleType="centerInside"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <View
         android:id="@+id/gradient"
         android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:layout_marginBottom="16dp"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="@+id/ellipsisGuideline" />
-
-    <View
-        android:id="@+id/gradientSolid"
-        android:layout_width="0dp"
-        android:layout_height="16dp"
-        android:background="@drawable/card_background"
+        android:layout_height="@dimen/gradient_size"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -183,11 +119,13 @@
     <TextView
         android:id="@+id/tvEllipsis"
         android:layout_width="0dp"
-        android:layout_height="16dp"
-        app:layout_constraintBottom_toBottomOf="@+id/ellipsisGuideline"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/ellipsis_margin_bottom"
+        app:layout_constraintBottom_toTopOf="@+id/ellipsisGuideline"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:text=". . ."
+        android:text="@string/ellipsis"
+        android:alpha="0.5"
         android:textSize="20sp"
         android:visibility="gone"
         android:gravity="center|top" />
