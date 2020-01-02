@@ -132,14 +132,10 @@ class NoteCardView(context: Context, attributeSet: AttributeSet?): ConstraintLay
                 findViewById<BulletPointView>(id).setText("")
             }
 
-            //set.clear(R.id.tvNote, START)
-            //set.clear(R.id.tvNote, END)
             set.clear(R.id.tvNote, TOP)
             set.clear(R.id.tvNote, BOTTOM)
             when (text.indexOfFirstBullet()) {
                 -1 -> {
-                    //set.connect(R.id.tvNote, START, PARENT_ID, START, getPixels(R.dimen.base_card_margin))
-                    //set.connect(R.id.tvNote, END, PARENT_ID, END, getPixels(R.dimen.base_card_margin))
                     if (TextUtils.isEmpty(title))
                         set.connect(R.id.tvNote, TOP, PARENT_ID, TOP, getPixels(R.dimen.base_card_margin))
                     else set.connect(R.id.tvNote, TOP, R.id.textGuideline, TOP)
@@ -147,8 +143,6 @@ class NoteCardView(context: Context, attributeSet: AttributeSet?): ConstraintLay
                 }
                 0 -> addBullets(set, true)
                 else -> {
-                    //set.connect(R.id.tvNote, START, PARENT_ID, START, getPixels(R.dimen.base_card_margin))
-                    //set.connect(R.id.tvNote, END, PARENT_ID, END, getPixels(R.dimen.base_card_margin))
                     if (TextUtils.isEmpty(title))
                         set.connect(R.id.tvNote, TOP, PARENT_ID, TOP, getPixels(R.dimen.base_card_margin))
                     else
@@ -158,13 +152,9 @@ class NoteCardView(context: Context, attributeSet: AttributeSet?): ConstraintLay
                 }
             }
 
-            //set.clear(R.id.tvTitle, START)
-            //set.clear(R.id.tvTitle, END)
             set.clear(R.id.tvTitle, TOP)
             if (!TextUtils.isEmpty(title)) {
-                //set.connect(R.id.tvTitle, START, PARENT_ID, START, getPixels(R.dimen.base_card_margin))
                 set.connect(R.id.tvTitle, TOP, PARENT_ID, TOP, getPixels(R.dimen.base_card_margin))
-                //set.connect(R.id.tvTitle, END, PARENT_ID, END, getPixels(R.dimen.base_card_margin))
             }
             set.applyTo(layout)
             post { adjustEllipsis() }
