@@ -11,8 +11,9 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.stgi.rodentia.BULLET_POINT_EMPTY
+import com.stgi.rodentia.BULLET_POINT_FULL
 import com.stgi.rodentia.CassettePlayerView
-import kotlinx.android.synthetic.main.card_base.view.*
 import kotlinx.android.synthetic.main.note_card_audio.view.*
 import java.io.File
 
@@ -299,16 +300,41 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NotesViewHolder>(), View.
         }
     }
 
-    inner class TextViewHolder(itemView : View, cl : View.OnClickListener) : NotesViewHolder(itemView, cl) {
+    inner class TextViewHolder(itemView : View, cl : View.OnClickListener) : NotesViewHolder(itemView, cl), NoteCardView.OnCheckedChangeListener {
         override fun bind(note : Note) {
             super.bind(note)
 
-             itemView as NoteCardView
-                itemView.setTextColor(note.getTextColor())
-                itemView.shapeShift().apply {
-                    title = note.title
-                    text = note.text!!
-                }.apply()
+            itemView as NoteCardView
+            itemView.listener = this
+            itemView.setTextColor(note.getTextColor())
+            itemView.shapeShift().apply {
+                title = note.title
+                text = note.text!!
+            }.apply()
+        }
+
+        override fun onCheckedChanged(isChecked: Boolean, position: Int) {
+            var charCounter = 0
+            var bulletCounter = 0
+            var charPosition = 0
+            note!!.text!!.forEach { c ->
+                if (c == BULLET_POINT_EMPTY || c == BULLET_POINT_FULL) {
+                    if (bulletCounter == position) {
+                        charPosition = charCounter
+                    }
+                    bulletCounter++
+                }
+                charCounter++
+            }
+
+            val newBullet = if (isChecked) BULLET_POINT_FULL else BULLET_POINT_EMPTY
+            val builder = StringBuilder(note!!.text!!)
+            builder.setCharAt(charPosition, newBullet)
+            val editedText = builder.toString()
+            val data = note!!.toData()
+            data.text = editedText
+
+            onNotesChangedListener?.onNoteUpdated(data)
         }
     }
 }

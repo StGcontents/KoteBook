@@ -10,4 +10,5 @@
     //TUTORIAL
     <string name="welcome_title">Welcome!</string>
     <string name="welcome_text">Work in progress</string>
+    <string name="ellipsis">. . .</string>
 </resources>
