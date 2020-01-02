@@ -1,6 +1,6 @@
 KOTEBOOK EVOLUTION
 
-Agouti release:
+Acouchy release:
 - all features but Alarm notifications
 - Portrait only
 

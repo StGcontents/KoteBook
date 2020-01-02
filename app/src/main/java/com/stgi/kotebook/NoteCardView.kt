@@ -86,7 +86,7 @@ class NoteCardView(context: Context, attributeSet: AttributeSet?): ConstraintLay
     }
 
 
-    inner class ShapeShifter(private val layout: NoteCardView) {
+    inner class ShapeShifter(private val layout: NoteCardView, private val isTutorial: Boolean = false) {
         private var bulletCountFlag: Boolean = false
 
         var title: String? = null
@@ -98,7 +98,8 @@ class NoteCardView(context: Context, attributeSet: AttributeSet?): ConstraintLay
         var text: String = ""
             set(value) {
                 field = value.trimSpaces()
-                layout.tvNote.text = field.trimBullets()
+                val str = field.trimBullets()
+                layout.tvNote.text = if (isTutorial) str.span(context, layout.tvNote.currentTextColor) else str
             }
 
         fun apply() {
@@ -165,7 +166,11 @@ class NoteCardView(context: Context, attributeSet: AttributeSet?): ConstraintLay
         private fun initBullet(v: BulletPointView, bulletText: String) {
             v.visibility = View.VISIBLE
             v.setIsChecked(bulletText[0] == BULLET_POINT_FULL)
-            v.setText(bulletText.substring(1).trimSpaces())
+
+            val str = bulletText.substring(1).trimSpaces()
+            if (isTutorial) v.setText(str.span(context, v.getTextColor()))
+            else v.setText(str)
+
             v.setMaxLines(1)
             v.setIsChecked(bulletText[0] == BULLET_POINT_FULL)
         }
@@ -199,21 +204,9 @@ class NoteCardView(context: Context, attributeSet: AttributeSet?): ConstraintLay
                 tvEllipsis.visibility = View.GONE
             }
         }
-
-        private fun String.trimBullets(): String {
-            val str = trimSpaces()
-            val index = str.indexOfFirstBullet()
-            return when (index) {
-                0 -> ""
-                in 1..Int.MAX_VALUE -> str.substring(0, index)
-                else -> str
-            }.trimSpaces()
-        }
-
-        private fun String.indexOfFirstBullet(): Int = trimSpaces().indexOfFirst { c -> c == BULLET_POINT_FULL || c == BULLET_POINT_EMPTY }
     }
 
-    fun shapeShift() = ShapeShifter(this)
+    fun shapeShift(isTutorial: Boolean = false) = ShapeShifter(this, isTutorial)
 
     interface OnCheckedChangeListener {
         fun onCheckedChanged(isChecked: Boolean, position: Int)

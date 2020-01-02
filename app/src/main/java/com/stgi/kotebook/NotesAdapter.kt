@@ -306,7 +306,7 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NotesViewHolder>(), View.
             itemView as NoteCardView
             itemView.listener = this
             itemView.setTextColor(note.getTextColor())
-            itemView.shapeShift().apply {
+            itemView.shapeShift(note.isTutorial).apply {
                 title = note.title
                 text = note.text!!
             }.apply()

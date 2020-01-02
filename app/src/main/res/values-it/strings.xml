@@ -10,5 +10,29 @@
 
     //TUTORIAL
     <string name="welcome_title">Benvenuto!</string>
-    <string name="welcome_text">In allestimento</string>
+    <string name="welcome_text">Questa è KoteBook, l\'app che ti aiuterà a tenere traccia dei tuoi impegni e delle tue idee. Segui le istruzioni nelle prossime note per scoprirne tutte le funzionalità!</string>
+    <string name="editor_tutorial">Toccami due volte!
+        \n
+        \n
+        \n
+        \n
+        \n
+        \n
+        Hai aperto questa nota! Adesso puoi modificarla a tuo piacimento. (Puoi spuntare le istruzioni che completi, se vuoi!)
+        \n◦Premi α o qualsiasi punto della nota per aprire l\'editor
+        \n◦Dai un titolo a questa nota tramite il form in cima allo schermo
+        \n◦Aggiungi un tuo pensiero al testo della nota
+        \n◦Premi β per aggiungere una voce alla fine dell\'elenco puntato…
+        \n◦… oppure <u>selezionami</u> e premi γ per aggiungerne una dopo di me
+        \n◦Premi δ e seleziona il tuo colore preferito!
+        \n◦Premi ε per confermare le modifiche, o ζ per scartarle
+        \n◦Premi ζ per chiudere la nota
+    </string>
+    <string name="create_new_title">Crea una nota!</string>
+    <string name="create_new_tutorial">Ti basta premere η per scriverne una</string>
+    <string name="audio_title">Ascoltami</string>
+    <string name="delete_tutorial">Toccami e premi θ per eliminarmi</string>
+    <string name="pin_tutorial">Toccami e premi ι per fissarmi in cima alle note</string>
+    <string name="tutorial_end_title">Tutto chiaro?</string>
+    <string name="tutorial_end_text">Allora sei promosso a Esperto di KoteBook! Goditi la sensazione di non scordare più niente (;</string>
 </resources>

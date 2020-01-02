@@ -1,6 +1,7 @@
 package com.stgi.rodentia
 
 import android.content.Context
+import android.text.Editable
 import android.util.Log
 import android.view.View
 
@@ -52,3 +53,6 @@ val palette = intArrayOf(
     R.color.noteColor8,
     R.color.noteColor7
 )
+
+fun String.trimSpaces() = trimStart { c -> c.isWhitespace() }.dropLastWhile { c -> c.isWhitespace() }
+fun Editable.trimSpaces() = if (isEmpty()) this else trimStart { c -> c.isWhitespace() }.dropLastWhile { c -> c.isWhitespace() } as Editable

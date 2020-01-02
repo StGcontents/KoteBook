@@ -87,12 +87,11 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
     ): View? {
         val view = inflater.inflate(R.layout.fragment_edit, container, false) as ConstraintLayout
 
-        view.fakeView.setOnTouchListener { _, _ ->
+        view.fakeView.setOnClickListener { _ ->
             if (!isEditing)
                 (activity?.let {
                     (it as MainActivity).pushStatus(STATUS_CONFIRM)
                 })
-            true
         }
 
         view.titleEt.setText(note!!.title)
@@ -295,33 +294,43 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
      */
     class WritingFragment: EditFragment() {
 
+        @SuppressLint("ClickableViewAccessibility")
         override fun onCreateInternal(view: View) {
             view as ConstraintLayout
 
             val bulletPointScrollView = LayoutInflater.from(context).inflate(R.layout.layout_text_editor, view, false)
             view.addView(bulletPointScrollView, view.indexOfChild(view.titleFrame) + 1)
-
-            bulletPointScrollView.setOnTouchListener { _, _ ->
-                activity?.let {
-                    (it as MainActivity).pushStatus(STATUS_CONFIRM)
-                    view.bulletPointEditor.requestFocus()
-                }
-                false
-            }
+            bulletPointScrollView.setOnTouchListener { _, _ -> false }
 
             view.bulletPointEditor.onFocusChangeListener = textFocusListener
         }
 
         override fun onStartingConstraintsSet(view: View) {
-            view.bulletPointEditor.setText(note!!.text!!)
+            initText(view.bulletPointEditor)
+
             view.bulletPointScrollView.invalidate()
             view.bulletPointEditor.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { _, _ ->
                 if (bulletPointEditor == null) return@OnCheckedChangeListener
                 val editedText = bulletPointEditor.getText()
                 val data = note!!.toData()
                 data.text = editedText
+                note!!.text = editedText
                 activity?.let { ViewModelProviders.of(it) }?.get(NotesModel::class.java)?.update(data)
             })
+        }
+
+        private fun initText(bulletPointEditor: BulletPointTextEditor = view!!.bulletPointEditor) {
+            if (note!!.isTutorial) {
+                bulletPointEditor.setText(note!!.text!!.trimBullets().span(context!!, note!!.getTextColor()))
+                val bullets = note!!.text!!.split(Regex(BULLET_POINT_SPLIT)).filter { s ->
+                    s.startsWith(BULLET_POINT_EMPTY) || s.startsWith(BULLET_POINT_FULL)
+                }
+                bullets.forEach {
+                    bulletPointEditor.addBulletPoint(text = it.substring(1).span(context!!, note!!.getTextColor()), isChecked = it[0] == BULLET_POINT_FULL, focus = false)
+                }
+            } else {
+                bulletPointEditor.setText(note!!.text!!)
+            }
         }
 
         override fun onFinalConstraintsSet(view: View) { }
@@ -337,7 +346,8 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
             set.connect(bulletPointScrollView.id, START, fakeView.id, START, getPixels(R.dimen.bullet_point_editor_end_margin_fullscreen))
             set.connect(bulletPointScrollView.id, END, fakeView.id, END, getPixels(R.dimen.bullet_point_editor_end_margin_fullscreen))
             set.connect(bulletPointScrollView.id, TOP, titleFrame.id, BOTTOM, getPixels(R.dimen.bullet_point_editor_end_margin_fullscreen))
-            set.connect(bulletPointScrollView.id, BOTTOM, fakeView.id, BOTTOM, getPixels(R.dimen.bullet_point_editor_end_margin_fullscreen))
+            set.connect(bulletPointScrollView.id, BOTTOM, fakeView.id, BOTTOM, getPixels(R.dimen.bullet_point_editor_end_margin_init))
+            set.setVerticalBias(bulletPointScrollView.id, 0f)
         }
 
         override fun openEditingInternal() { }
@@ -345,20 +355,29 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
         override fun closeEditingInternal(saveEdits: Boolean) {
             bulletPointEditor.clearFocus()
 
-            val editedTitle = titleEt.text!!.toString().trimSpaces()
-            val editedText = bulletPointEditor.getText()
-            if (saveEdits && ((editedText != note?.text || editedTitle != note?.text)) &&
-                (editedTitle.isNotEmpty() || editedText.isNotEmpty())) {
-                val data = note!!.toData()
-                data.title = editedTitle
-                data.text = editedText
-                activity?.let { ViewModelProviders.of(it) }?.get(NotesModel::class.java)?.update(data)
+            if (saveEdits) {
+                val editedTitle = titleEt.text!!.toString().trimSpaces()
+                val editedText = bulletPointEditor.getText()
+                if ((editedText != note?.text || editedTitle != note?.text) &&
+                    (editedTitle.isNotEmpty() || editedText.isNotEmpty())) {
+                    val data = note!!.toData()
+                    data.title = editedTitle
+                    data.text = editedText
+                    activity?.let { ViewModelProviders.of(it) }?.get(NotesModel::class.java)
+                        ?.update(data)
+                }
+            } else {
+                initText()
             }
         }
 
         override fun applyColors(view: View?) {
             super.applyColors(view)
-            view?.bulletPointEditor?.setTextColor(note!!.getTextColor())
+            view?.bulletPointEditor?.let {
+                it.setTextColor(note!!.getTextColor())
+                if (note!!.isTutorial)
+                    initText(it)
+            }
         }
     }
 
@@ -503,7 +522,7 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
         override fun onBackPressed(): Boolean {
             when {
                 isEditing -> {
-                    closeEditing()
+                    closeEditing(false)
                     enforcer.pushStatus(STATUS_EDIT)
                 }
             }

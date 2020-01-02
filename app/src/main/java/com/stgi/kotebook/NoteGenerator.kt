@@ -43,28 +43,59 @@ class NoteGenerator(private val context: Context) {
         "Watch Youtube videos"
     )
 
-    fun generateNotes(lastVersionCode: Int): Array<Note.NoteData> =
-        if (BuildConfig.DEBUG) {
-            arrayOf(
-                generateNote(),
-                generateNote(),
-                generateNote(),
-                generateNote(),
-                generateNote(),
-                generateNote(),
-                generateNote()
-            )
-        } else {
-            val list = ArrayList<Note.NoteData>()
+    fun generateNotes(lastVersionCode: Int): Array<Note.NoteData> {
+        val list = ArrayList<Note.NoteData>().apply {
             when {
-                lastVersionCode < AGOUTI -> {
-                    list.add(generateNote(
-                        title = context.getString(R.string.welcome_title),
-                        text = context.getString(R.string.welcome_text),
-                        isRecording = false,
-                        isPinned = true,
-                        color = context.resources.getColor(R.color.noteColor2, context.theme)
-                    ))
+                lastVersionCode < ACOUCHY -> {
+                    add(
+                        generateNote(
+                            title = context.getString(R.string.welcome_title),
+                            text = context.getString(R.string.welcome_text),
+                            isRecording = false,
+                            isPinned = true,
+                            color = context.resources.getColor(R.color.noteColor2, context.theme)
+                        )
+                    )
+                    add(
+                        generateNote(
+                            title = "",
+                            text = context.getString(R.string.editor_tutorial),
+                            isRecording = false,
+                            isPinned = false,
+                            color = context.resources.getColor(R.color.noteColor7, context.theme),
+                            isTutorial = true
+                        )
+                    )
+                    add(
+                        generateNote(
+                            title = context.getString(R.string.create_new_title),
+                            text = context.getString(R.string.create_new_tutorial),
+                            isRecording = false,
+                            isPinned = true,
+                            color = context.resources.getColor(R.color.noteColor4, context.theme),
+                            isTutorial = true
+                        )
+                    )
+                    add(
+                        generateNote(
+                            title = "",
+                            text = context.getString(R.string.delete_tutorial),
+                            isRecording = false,
+                            isPinned = false,
+                            color = context.resources.getColor(R.color.noteColor5, context.theme),
+                            isTutorial = true
+                        )
+                    )
+                    add(
+                        generateNote(
+                            title = "",
+                            text = context.getString(R.string.pin_tutorial),
+                            isRecording = false,
+                            isPinned = false,
+                            color = context.resources.getColor(R.color.noteColor6, context.theme),
+                            isTutorial = true
+                        )
+                    )
                 }
                 lastVersionCode < BEAVER -> {
 
@@ -82,19 +113,38 @@ class NoteGenerator(private val context: Context) {
 
                 }
             }
-            list.toArray(arrayOfNulls<Note.NoteData>(list.size))
+            add(
+                generateNote(
+                    title = context.getString(R.string.tutorial_end_title),
+                    text = context.getString(R.string.tutorial_end_text),
+                    isRecording = false,
+                    isPinned = false,
+                    color = context.resources.getColor(R.color.noteColor8, context.theme)
+                )
+            )
         }
+        return list.toArray(arrayOfNulls(list.size))
+    }
 
     private fun generateNote(
         isRecording: Boolean = false, //random.nextBoolean(),
         title: String = TITLES[random.nextInt(0, TITLES.size)],
         text: String = if (isRecording) "$title.aar" else TEXTS[random.nextInt(0, TEXTS.size)],
         color: Int = generateRandomColor(),
-        isPinned: Boolean = random.nextBoolean()
-    ): Note.NoteData = Note.NoteData(title = title, text = text, color = color, isRecording = isRecording, pinned = isPinned)
+        isPinned: Boolean = random.nextBoolean(),
+        isTutorial: Boolean = false
+    ): Note.NoteData = Note.NoteData(
+        title = title,
+        text = text,
+        color = color,
+        isRecording = isRecording,
+        pinned = isPinned,
+        isTutorial = isTutorial
+    )
 
-    fun generateRandomColor() : Int {
+    fun generateRandomColor(): Int {
         return context.resources.getColor(
-            palette[random.nextInt(palette.size)], context.theme)
+            palette[random.nextInt(palette.size)], context.theme
+        )
     }
 }

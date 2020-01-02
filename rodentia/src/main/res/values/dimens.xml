@@ -6,6 +6,7 @@
     <dimen name="bullet_point_start_padding">-6dp</dimen>
     <dimen name="bullet_point_editor_top_margin">12sp</dimen>
     <dimen name="bullet_point_editor_margin">16dp</dimen>
+    <dimen name="bullet_point_editor_bottom_padding">80dp</dimen>
     <dimen name="bullet_point_et_margin">4dp</dimen>
 
     <dimen name="fab_size">48dp</dimen>
@@ -39,7 +40,7 @@
     <dimen name="bullet_point_height">32dp</dimen>
     <dimen name="small_fab_size">24dp</dimen>
     <dimen name="palette_radius">16dp</dimen>
-    <dimen name="small_fab_elevation">1dp</dimen>
+    <dimen name="small_fab_elevation">2dp</dimen>
     <dimen name="play_button_size">64dp</dimen>
     <dimen name="big_play_button_size">128dp</dimen>
     <dimen name="bigger_play_button_size">256dp</dimen>

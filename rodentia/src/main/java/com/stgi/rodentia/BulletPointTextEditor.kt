@@ -58,6 +58,7 @@ class BulletPointTextEditor(context: Context, attrs: AttributeSet) : LinearLayou
 
     fun setText(text: String?) {
         removeAllBulletPoints()
+        textChunks.clear()
 
         if (TextUtils.isEmpty(text)) {
             mainText.setText("")
@@ -79,25 +80,27 @@ class BulletPointTextEditor(context: Context, attrs: AttributeSet) : LinearLayou
         }
     }
 
+    fun setText(text: SpannableString) {
+        removeAllBulletPoints()
+        textChunks.clear()
+        mainText.setText(text)
+    }
+
     fun getText(): String {
         val builder = StringBuilder()
         forEach { v ->
             when (v) {
                 is EditText -> {
-                    builder.append(v.text.trimSpaces())
+                    builder.append(v.text.toString().trimSpaces())
                 }
                 is BulletPointView -> {
-                    val str = v.getText()
+                    val str = v.getText().toString()
                     if (!TextUtils.isEmpty(str))
                         builder.append(str)
                 }
             }
         }
         return builder.toString()
-    }
-
-    fun clear() {
-
     }
 
     override fun addAfter(v: BulletPointView?) {
@@ -113,21 +116,29 @@ class BulletPointTextEditor(context: Context, attrs: AttributeSet) : LinearLayou
         else addBulletPoint(position = indexOfChild(v) + 1)
     }
 
-    fun addBulletPoint(text: String = "", isChecked: Boolean = false, position: Int = childCount, focus: Boolean = true): View {
-        val bulletPointView = BulletPointView(context, null)
-
+    private fun addBulletPointInternal(bulletPointView: BulletPointView, isChecked: Boolean = false, position: Int = childCount, focus: Boolean = true) {
         bulletPointView.addOrRemoveAdapter = this
         bulletPointView.setOnFocusChangeListener(focusChangeListener)
         bulletPointView.setOnCheckedChangeListener(checkedChangeListener)
 
         bulletPointView.setIsChecked(isChecked)
-
-        bulletPointView.setText(text.trimSpaces())
         bulletPointView.setTextColor(textColor)
 
         addView(bulletPointView, position)
         if (focus) bulletPointView.post { bulletPointView.requestFocus() }
+    }
 
+    fun addBulletPoint(text: String = "", isChecked: Boolean = false, position: Int = childCount, focus: Boolean = true): View {
+        val bulletPointView = BulletPointView(context, null)
+        addBulletPointInternal(bulletPointView, isChecked, position, focus)
+        bulletPointView.setText(text.trimSpaces())
+        return bulletPointView
+    }
+
+    fun addBulletPoint(text: SpannableString, isChecked: Boolean = false, position: Int = childCount, focus: Boolean = true): View {
+        val bulletPointView = BulletPointView(context, null)
+        addBulletPointInternal(bulletPointView, isChecked, position, focus)
+        bulletPointView.setText(text)
         return bulletPointView
     }
 
@@ -196,9 +207,6 @@ class BulletPointTextEditor(context: Context, attrs: AttributeSet) : LinearLayou
     override fun requestFocus(direction: Int, previouslyFocusedRect: Rect?): Boolean {
         return if (childCount == 0) mainText.requestFocus() else getChildAt(childCount - 1).requestFocus()
     }
-
-    fun String.trimSpaces() = trimStart { c -> c.isWhitespace() }.dropLastWhile { c -> c.isWhitespace() }.toString()
-    private fun Editable.trimSpaces() = toString().trimSpaces()
 
     private fun removeAllBulletPoints() {
         var i = 0

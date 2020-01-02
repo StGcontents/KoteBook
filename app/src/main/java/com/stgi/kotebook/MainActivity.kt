@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.util.*
 
-const val AGOUTI = 1
+const val ACOUCHY = 1
 const val BEAVER = 2
 const val CAVIA = 3
 const val DORMOUSE = 4

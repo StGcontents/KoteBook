@@ -7,12 +7,18 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [Note.NoteData::class], version = 6)
+@Database(entities = [Note.NoteData::class], version = 7)
 abstract class NotesDatabase : RoomDatabase() {
     companion object {
         private val migrationFrom5To6: Migration = object : Migration(5, 6) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE NoteData ADD COLUMN timestamp INTEGER")
+            }
+        }
+
+        private val migrationFrom6To7: Migration = object : Migration(6, 7) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE NoteData ADD COLUMN is_tutorial INTEGER NOT NULL DEFAULT 0")
             }
         }
 
@@ -26,6 +32,7 @@ abstract class NotesDatabase : RoomDatabase() {
                         NotesDatabase::class.java,
                         "notes-db")
                     .addMigrations(migrationFrom5To6)
+                    .addMigrations(migrationFrom6To7)
                     .build()
             }
             return db!!

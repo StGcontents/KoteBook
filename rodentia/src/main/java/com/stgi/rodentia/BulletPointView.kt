@@ -7,6 +7,7 @@ import android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
 import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.text.Editable
+import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextWatcher
 import android.text.style.StrikethroughSpan
@@ -70,7 +71,26 @@ class BulletPointView(context: Context, attrs: AttributeSet?, private val isInte
         setText(tv, text)
     }
 
+    fun setText(spannableText: SpannableString) {
+        setText(et, spannableText)
+        setText(tv, spannableText)
+    }
+
     private fun setText(v: TextView?, text: String) {
+        if (v is EditText) {
+            v.setText(text)
+            if (cb.isChecked) v.setStrikeThrough(end = text.length)
+            else v.removeStrikeThrough()
+        }
+        else if (v != null){
+            v.text = text
+            if (cb.isChecked) {
+                v.paintFlags = v.paintFlags or STRIKE_THRU_TEXT_FLAG
+            }
+        }
+    }
+
+    private fun setText(v: TextView?, text: SpannableString) {
         if (v is EditText) {
             v.setText(text)
             if (cb.isChecked) v.setStrikeThrough(end = text.length)
@@ -134,6 +154,8 @@ class BulletPointView(context: Context, attrs: AttributeSet?, private val isInte
         et?.setOnKeyListener(editor)
         setTextWatcher(null)
     }
+
+    fun getTextColor() = if (tv != null) tv!!.currentTextColor else et!!.currentTextColor
 
     private var animator: ValueAnimator? = null
 
@@ -255,9 +277,6 @@ class BulletPointView(context: Context, attrs: AttributeSet?, private val isInte
         fun remove(v: BulletPointView?, requestFocus: Boolean = true)
     }
 
-    private fun String.trimSpaces() = trimStart { c -> c.isWhitespace() }.dropLastWhile { c -> c.isWhitespace() }.toString()
-    fun Editable.trimSpaces() = toString().trimSpaces()
-
     fun setTextWatcher(watcher: TextWatcher?) {
         et?.removeTextChangedListener(watcherWrapper)
         watcherWrapper = TextWatcherWrapper(watcher)
@@ -271,23 +290,16 @@ class BulletPointView(context: Context, attrs: AttributeSet?, private val isInte
             watcher?.afterTextChanged(editable)
 
             val str = editable?.toString() ?: ""
-            if (str.endsWith("\n")) {
-                et?.setText(editable?.trimSpaces())
+            if (str.contains("\n")) {
+                val text = if (str == "\n" || str.isEmpty()) editable!!
+                else editable!!.trimSpaces()
+                if (text.contains("\n")) {
+                    val index = text.indexOf("\n")
+                    text.replace(index, index + 1, "")
+                }
+                et?.text = text
                 if (str != "\n") addOrRemoveAdapter?.addAfter(this@BulletPointView)
                 return
-            }
-
-            if (editable!!.isNotEmpty() && editable.isNotEmpty()) {
-                if (cb.isChecked) {
-                    val spans = editable.getSpans(0, editable.length, StrikethroughSpan::class.java)
-                    if (spans.isEmpty() ||
-                        editable.getSpanStart(spans[0]) != 0 ||
-                        editable.getSpanEnd(spans[0]) != editable.length) {
-                        editable.setSpan(
-                            StrikethroughSpan(), 0, editable.length,
-                            Spanned.SPAN_INCLUSIVE_INCLUSIVE)
-                    }
-                }
             }
         }
         override fun beforeTextChanged(str: CharSequence?, start: Int, count: Int, after: Int) {

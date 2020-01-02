@@ -6,9 +6,36 @@
     <string name="snackbar_message">You deleted a note.</string>
     <string name="snackbar_undo">UNDO</string>
     <string name="toast_alarm_set">Alarm set to&#32;</string>
+    <string name="ellipsis" translatable="false">. . .</string>
 
     //TUTORIAL
     <string name="welcome_title">Welcome!</string>
-    <string name="welcome_text">Work in progress</string>
-    <string name="ellipsis">. . .</string>
+    <string name="welcome_text">This is KoteBook, the app that\'ll help you keep track of your chores and thoughts. Check out the instructions in the following notes to discover all of KoteBook\'s features!</string>
+    <string name="editor_tutorial">Tap me twice!
+        \n
+        \n
+        \n
+        \n
+        \n
+        \n
+        \n
+        \n
+        \n
+        \nYou opened a note! You can now edit it as you please. (Check each completed instruction, if you like!)
+        \n◦Tap α or any point in the note to open the editor
+        \n◦Give this note a title through the form on the top
+        \n◦Add something to this note\'s text!
+        \n◦Tap β to append a bullet to the bullet points…
+        \n◦… or <u>select me</u> and tap γ to add one after me
+        \n◦Tap δ and pick your favorite color!
+        \n◦Tap ε to confirm edits, or ζ to discard them
+        \n◦Tap ζ to close this note
+    </string>
+    <string name="create_new_title">Create a new note!</string>
+    <string name="create_new_tutorial">It\'s easy: tap η to write one</string>
+    <string name="audio_title">Play me</string>
+    <string name="delete_tutorial">Tap me and press θ to delete me</string>
+    <string name="pin_tutorial">Tap me and press ι to pin me on top</string>
+    <string name="tutorial_end_title">All clear?</string>
+    <string name="tutorial_end_text">Then you just became a KoteBook pro! Enjoy never forgetting a thing again (;</string>
 </resources>
