@@ -86,7 +86,7 @@ class NoteGenerator(private val context: Context) {
         }
 
     private fun generateNote(
-        isRecording: Boolean = random.nextBoolean(),
+        isRecording: Boolean = false, //random.nextBoolean(),
         title: String = TITLES[random.nextInt(0, TITLES.size)],
         text: String = if (isRecording) "$title.aar" else TEXTS[random.nextInt(0, TEXTS.size)],
         color: Int = generateRandomColor(),

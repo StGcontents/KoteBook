@@ -15,11 +15,15 @@ import androidx.constraintlayout.widget.ConstraintSet.*
 import androidx.core.view.isVisible
 import com.stgi.rodentia.*
 import kotlinx.android.synthetic.main.card_base.view.*
+import java.lang.Integer.min
+
+private const val MAX_NO_TEXT = 6
+private const val MAX_WITH_TEXT = 4
 
 class NoteCardView(context: Context, attributeSet: AttributeSet?): ConstraintLayout(context, attributeSet) {
 
     private val startingSet: ConstraintSet
-    private val bulletsIds = intArrayOf(-1, -1, -1, -1, -1)
+    private val bulletsIds = IntArray(MAX_NO_TEXT)
 
     var listener: OnCheckedChangeListener? = null
 
@@ -32,7 +36,7 @@ class NoteCardView(context: Context, attributeSet: AttributeSet?): ConstraintLay
 
         var lastId = -1
         val index = indexOfChild(tvNote) + 1
-        for (i: Int in 0..4) {
+        for (i: Int in 0 until MAX_NO_TEXT) {
             val view = BulletPointView(context, null, false)
             view.id = View.generateViewId()
             bulletsIds[i] = view.id
@@ -53,37 +57,6 @@ class NoteCardView(context: Context, attributeSet: AttributeSet?): ConstraintLay
             lastId = view.id
         }
         startingSet.applyTo(this)
-    }
-
-    private fun adjustEllipsis() {
-        if (height >= getPixels(R.dimen.card_max_height)) {
-            val set = ConstraintSet()
-            set.clone(this)
-            set.setGuidelineBegin(R.id.ellipsisGuideline, getPixels(R.dimen.card_max_height))
-            if (findViewWithTag<BulletPointView>(0).isVisible)
-                set.clear(R.id.tvNote, BOTTOM)
-            else {
-                for (i in bulletsIds.lastIndex downTo 0) {
-                    val view = findViewById<BulletPointView>(bulletsIds[i])
-                    if (!TextUtils.isEmpty(view.getText())) {
-                        set.clear(view.id, BOTTOM)
-                        break
-                    }
-                }
-            }
-            set.applyTo(this)
-
-            gradient.visibility = View.VISIBLE
-            tvEllipsis.visibility = View.VISIBLE
-        } else {
-            val set = ConstraintSet()
-            set.clone(this)
-            set.setGuidelineBegin(R.id.ellipsisGuideline,0)
-            set.applyTo(this)
-
-            gradient.visibility = View.GONE
-            tvEllipsis.visibility = View.GONE
-        }
     }
 
     override fun setBackgroundColor(color: Int) {
@@ -114,6 +87,8 @@ class NoteCardView(context: Context, attributeSet: AttributeSet?): ConstraintLay
 
 
     inner class ShapeShifter(private val layout: NoteCardView) {
+        private var bulletCountFlag: Boolean = false
+
         var title: String? = null
             set(value) {
                 field = value?.trimSpaces()
@@ -177,12 +152,14 @@ class NoteCardView(context: Context, attributeSet: AttributeSet?): ConstraintLay
             }
 
             var i = 0
-            while (i < bullets.size && i < if (stickToCeiling) 5 else 3) {
+            val maxBullets = if (stickToCeiling) MAX_NO_TEXT else MAX_WITH_TEXT
+            while (i < min(bullets.size, maxBullets)) {
                 set.constrainMinHeight(bulletsIds[i], getPixels(R.dimen.bullet_point_height))
                 initBullet(findViewById(bulletsIds[i]), bullets[i])
                 i++
             }
             set.connect(bulletsIds[i - 1], BOTTOM, PARENT_ID, BOTTOM, getPixels(R.dimen.base_card_margin))
+            bulletCountFlag = bullets.size > maxBullets
         }
 
         private fun initBullet(v: BulletPointView, bulletText: String) {
@@ -191,6 +168,36 @@ class NoteCardView(context: Context, attributeSet: AttributeSet?): ConstraintLay
             v.setText(bulletText.substring(1).trimSpaces())
             v.setMaxLines(1)
             v.setIsChecked(bulletText[0] == BULLET_POINT_FULL)
+        }
+
+        private fun adjustEllipsis() {
+            val set = ConstraintSet()
+            set.clone(layout)
+
+            if (height >= getPixels(R.dimen.card_max_height) || bulletCountFlag) {
+                set.setGuidelineBegin(R.id.ellipsisGuideline, min(height, getPixels(R.dimen.card_max_height)))
+                if (findViewWithTag<BulletPointView>(0).isVisible)
+                    set.clear(R.id.tvNote, BOTTOM)
+                else {
+                    for (i in bulletsIds.lastIndex downTo 0) {
+                        val view = findViewById<BulletPointView>(bulletsIds[i])
+                        if (!TextUtils.isEmpty(view.getText())) {
+                            set.clear(view.id, BOTTOM)
+                            break
+                        }
+                    }
+                }
+                set.applyTo(layout)
+
+                gradient.visibility = View.VISIBLE
+                tvEllipsis.visibility = View.VISIBLE
+            } else {
+                set.setGuidelineBegin(R.id.ellipsisGuideline,0)
+                set.applyTo(layout)
+
+                gradient.visibility = View.GONE
+                tvEllipsis.visibility = View.GONE
+            }
         }
 
         private fun String.trimBullets(): String {
