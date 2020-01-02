@@ -111,20 +111,7 @@
         android:id="@+id/gradient"
         android:layout_width="0dp"
         android:layout_height="@dimen/gradient_size"
-<<<<<<< HEAD
-=======
         android:layout_marginBottom="@dimen/gradient_solid_size"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="@+id/ellipsisGuideline" />
-
-    <View
-        android:id="@+id/gradientSolid"
-        android:layout_width="0dp"
-        android:layout_height="@dimen/gradient_solid_size"
-        android:background="@drawable/card_background"
->>>>>>> c0c3ba6b5f5c16d75f206cc9bffbdea9e35bbc7f
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
