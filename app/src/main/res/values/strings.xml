@@ -38,4 +38,5 @@
     <string name="pin_tutorial">Tap me and press ι to pin me on top</string>
     <string name="tutorial_end_title">All clear?</string>
     <string name="tutorial_end_text">Then you just became a KoteBook pro! Enjoy never forgetting a thing again (;</string>
+    <string name="tutorial_audio">en/tutorial.aac</string>
 </resources>

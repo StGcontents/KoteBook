@@ -310,12 +310,7 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
 
             view.bulletPointScrollView.invalidate()
             view.bulletPointEditor.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { _, _ ->
-                if (bulletPointEditor == null) return@OnCheckedChangeListener
-                val editedText = bulletPointEditor.getText()
-                val data = note!!.toData()
-                data.text = editedText
-                note!!.text = editedText
-                activity?.let { ViewModelProviders.of(it) }?.get(NotesModel::class.java)?.update(data)
+                activity?.let { (it as MainActivity).pushStatus(STATUS_CONFIRM) }
             })
         }
 
@@ -374,9 +369,8 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
         override fun applyColors(view: View?) {
             super.applyColors(view)
             view?.bulletPointEditor?.let {
-                it.setTextColor(note!!.getTextColor())
-                if (note!!.isTutorial)
-                    initText(it)
+                if (it.textColor != note!!.getTextColor())
+                    it.textColor = note!!.getTextColor()
             }
         }
     }
@@ -396,9 +390,11 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
         override fun onStartingConstraintsSet(view: View) { }
 
         override fun onFinalConstraintsSet(view: View) {
-            val file = File(getFilepath(note!!.text))
+            val file =
+                if (note!!.isTutorial) getAudioFromAssets(context!!, R.string.tutorial_audio)
+                else File(getFilepath(note!!.text))
             if (file.exists()) {
-                view.playerView.setContentUri(Uri.fromFile(file))
+                view.playerView.setContentFile(file)
             }
         }
 
@@ -432,8 +428,6 @@ abstract class EditFragment : Fragment(), FabStationView.OnPaletteItemTouchedLis
             super.applyColors(view)
             view!!.playerView?.setCassetteColor(note!!.getTextColor())
         }
-
-        fun getFilepath(name: String?) = (activity as MainActivity).directory.absolutePath + "/" + name
     }
 
     companion object {

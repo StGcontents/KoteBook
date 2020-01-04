@@ -2,12 +2,15 @@ package com.stgi.rodentia
 
 import android.content.Context
 import android.graphics.Color
+import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.Typeface
+import android.media.Image
 import android.text.Editable
 import android.text.Layout.JUSTIFICATION_MODE_INTER_WORD
 import android.text.SpannableString
 import android.text.TextUtils
+import android.text.style.ImageSpan
 import android.text.style.StyleSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -54,7 +57,20 @@ class BulletPointTextEditor(context: Context, attrs: AttributeSet) : LinearLayou
 
     private var focusChangeListener: OnFocusChangeListener? = null
     private var checkedChangeListener: CompoundButton.OnCheckedChangeListener? = null
-    private var textColor = Color.BLACK
+    var textColor = Color.BLACK
+        set(value) {
+            field = value
+            forEach { view ->
+                when (view) {
+                    is EditText -> {
+                        setEditTextColor(view)
+                    }
+                    is BulletPointView-> {
+                        view.setTextColor(field)
+                    }
+                }
+            }
+        }
 
     fun setText(text: String?) {
         removeAllBulletPoints()
@@ -152,24 +168,14 @@ class BulletPointTextEditor(context: Context, attrs: AttributeSet) : LinearLayou
         }
     }
 
-    fun setTextColor(color: Int) {
-        textColor = color
-        forEach { view ->
-            when (view) {
-                is EditText -> {
-                    setEditTextColor(view)
-                }
-                is BulletPointView-> {
-                    view.setTextColor(color)
-                }
-            }
-        }
-    }
-
     private fun setEditTextColor(et: EditText) {
         et.setTextColor(textColor)
         et.highlightColor = textColor
         et.setHintTextColor(Color.argb(120, textColor.red, textColor.green, textColor.blue))
+        et.text.getSpans(0, et.length(), ImageSpan::class.java).forEach {imgSp ->
+            if (imgSp.drawable.colorFilter != null)
+                imgSp.drawable.setColorFilter(textColor, PorterDuff.Mode.SRC_ATOP)
+        }
     }
 
     override fun setOnFocusChangeListener(l: OnFocusChangeListener?) {

@@ -10,7 +10,6 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.os.Environment
 import android.os.PersistableBundle
 import android.text.TextUtils
 import android.view.*
@@ -47,8 +46,6 @@ const val LAST_STATUS = "currentStatus"
 
 private const val PERMISSIONS_REQUEST = 13
 
-const val DIRECTORY = "/KoteBook/"
-
 class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
     NotesAdapter.OnNotesChangedListener, FabStationView.FabStationController {
 
@@ -69,16 +66,13 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
 
     var tmpFile: File? = null
 
-    val directory = File(Environment.getExternalStorageDirectory().absolutePath + DIRECTORY).also {
-        if (!it.exists())
-            it.mkdirs()
-    }
+
 
     private fun filterNotes() = GlobalScope.launch {
         val iterator = model.getAll().iterator()
         while (iterator.hasNext()) {
             val data = iterator.next()
-            if (data.isRecording && !File(buildFilepath(data.text)).exists())
+            if (!data.isTutorial && data.isRecording && !File(getFilepath(data.text)).exists())
                 model.remove(data)
         }
     }
@@ -326,7 +320,7 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
             var fileName = audioEt.text.toString().trimSpaces()
             if (fileName.isEmpty()) fileName = tmpFile!!.nameWithoutExtension
             fileName = fileName.plus(".").plus(tmpFile?.extension)
-            val newFile = File(buildFilepath(fileName))
+            val newFile = File(getFilepath(fileName))
             tmpFile?.copyTo(newFile, overwrite = true)
             tmpFile?.delete()
             tmpFile = null
@@ -545,10 +539,4 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
 
         override fun getStatus(): Int = STATUS_SAVE_REC
     }
-
-
-    fun buildFilepath(name: String?) = directory.absolutePath + "/" + name
-
-    private fun String.trimSpaces() =
-        trimStart { c -> c.isWhitespace() }.dropLastWhile { c -> c.isWhitespace() }
 }

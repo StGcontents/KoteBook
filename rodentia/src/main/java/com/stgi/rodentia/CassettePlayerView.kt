@@ -8,10 +8,8 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.os.CountDownTimer
 import android.util.AttributeSet
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -24,9 +22,10 @@ import androidx.core.graphics.green
 import androidx.core.graphics.red
 import kotlinx.android.synthetic.main.cassette_barker.view.*
 import kotlinx.android.synthetic.main.cassette_player.view.*
+import java.io.File
+import java.io.FileInputStream
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.sign
 
 
 private const val ERROR = -1
@@ -84,48 +83,6 @@ class CassettePlayerView(context: Context, attrs: AttributeSet): LinearLayout(co
             override fun onViewAttachedToWindow(p0: View?) { }
         })
 
-        val tl: OnTouchListener = object : OnTouchListener {
-            private var lastAngle: Float = 0f
-            override fun onTouch(v: View?, ev: MotionEvent?): Boolean {
-                when (ev?.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        lastAngle = ev.x + v!!.left
-                    }
-                    MotionEvent.ACTION_MOVE -> {
-                        pause()
-                        /*val pos = IntArray(2)
-                        v?.getLocationInWindow(pos)
-                        //pos[0] += cassetteLeft.width / 2
-                        //pos[1] += cassetteLeft.height / 2*/
-                        val gamma: Float
-
-                        /*if (abs(pos[0] - ev.x) < 1)
-                            gamma = if (ev.y > pos[1]) 180f else 0f
-                        else {
-                            val a = ev.y - pos[1]
-                            val b = (ev.y.pow(2) + (ev.x - pos[0]).pow(2)).pow(0.5f)
-                            val c = ((pos[1] - ev.y).pow(2) + (ev.x - pos[0]).pow(2)).pow(0.5f)
-                            gamma = acos((a.pow(2) + b.pow(2) - c.pow(2)).div(2 * a * b))
-                        }*/
-                        gamma = ev.x + v!!.left - lastAngle
-                        Log.d("ANGLETAG", "" + ev.rawX + " | " + lastAngle + " | " + (gamma.sign * (gamma % 360)))
-
-                        cassetteLeft.rotation += gamma.div(4)
-                        cassetteRight.rotation += gamma.div(4)
-                        seekStep(gamma > 0)
-
-                        //lastAngle = gamma
-                    }
-                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                        lastAngle = 0f
-                        start()
-                    }
-                }
-                return true
-            }
-        }
-        //cassetteLeft.setOnTouchListener(tl)
-        //cassetteRight.setOnTouchListener(tl)
         isEnabled = false
 
         val a = context.theme.obtainStyledAttributes(
@@ -145,32 +102,50 @@ class CassettePlayerView(context: Context, attrs: AttributeSet): LinearLayout(co
     }
 
     var uri: Uri? = null
+    var file: File? = null
 
     fun setContentUri(uri: Uri) {
+        this.uri = uri
+        if (this.uri != null) {
+            setContentInternal()
+            mediaPlayer?.let {
+                it.setDataSource(context, uri)
+                it.prepareAsync()
+            }
+        }
+    }
+
+    fun setContentFile(file: File) {
+        this.file = file
+        if (this.file != null) {
+            setContentInternal()
+            mediaPlayer?.let {
+                it.setDataSource(FileInputStream(this@CassettePlayerView.file).fd)
+                it.prepareAsync()
+            }
+        }
+    }
+
+    private fun setContentInternal() {
         mediaPlayer?.release()
         status = CREATED
         playButton.isEnabled = false
 
-        this.uri = uri
-        if (this.uri != null) {
-            mediaPlayer = MediaPlayer().apply {
-                setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                        .build()
-                )
-                setOnErrorListener { _, _, p2 ->
-                    status = ERROR
-                    mediaPlayer?.release()
-                    false
-                }
-                setDataSource(context, uri)
-                setOnCompletionListener { stop() }
-                setOnPreparedListener {
-                    status = INIT
-                    isEnabled = true
-                }
-                prepareAsync()
+        mediaPlayer = MediaPlayer().apply {
+            setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build()
+            )
+            setOnErrorListener { _, _, p2 ->
+                status = ERROR
+                mediaPlayer?.release()
+                false
+            }
+            setOnCompletionListener { stop() }
+            setOnPreparedListener {
+                status = INIT
+                isEnabled = true
             }
         }
     }
@@ -221,6 +196,8 @@ class CassettePlayerView(context: Context, attrs: AttributeSet): LinearLayout(co
             mediaPlayer?.stop()
             if (uri != null)
                 setContentUri(uri!!)
+            else if (file != null)
+                setContentFile(file!!)
         }
     }
 
@@ -234,8 +211,6 @@ class CassettePlayerView(context: Context, attrs: AttributeSet): LinearLayout(co
         //mediaPlayer?.release()
         super.onDetachedFromWindow()
     }
-
-    private var lastPercent = 0f
 
     private fun updateProgress(percent: Float = mediaPlayer!!.currentPosition / mediaPlayer!!.duration.toFloat(), force: Boolean = false) {
         val set = ConstraintSet()

@@ -53,7 +53,7 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
         paletteMask.setOnTouchListener { _, _ -> true }
         mask.setOnTouchListener{ _, ev -> if (ev!!.action == KeyEvent.ACTION_UP)  strategy?.onBackPressed(); true }
 
-        inputText.setTextColor(Color.WHITE)
+        inputText.textColor = Color.WHITE
 
         audioEt.setTextColor(Color.WHITE)
         audioEt.highlightColor = Color.argb(120, 0, 0, 0)

@@ -52,4 +52,5 @@
     <dimen name="recycler_bottom_padding">80dp</dimen>
     <dimen name="snackbar_height">40dp</dimen>
     <dimen name="span_size">24dp</dimen>
+    <dimen name="card_elevation">2dp</dimen>
 </resources>

@@ -3,7 +3,6 @@ package com.stgi.kotebook
 import android.animation.Animator
 import android.annotation.SuppressLint
 import android.graphics.PorterDuff
-import android.net.Uri
 import android.view.*
 import android.widget.CheckBox
 import android.widget.ImageButton
@@ -26,7 +25,7 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NotesViewHolder>(), View.
     var onNotesChangedListener: OnNotesChangedListener? = null
 
     init {
-        items.sortWith(compareBy({it.pinned}, {it.id}))
+        items.sortWith(compareBy({it.isTutorial}, {it.pinned}, {it.id}))
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotesViewHolder {
@@ -271,7 +270,7 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NotesViewHolder>(), View.
     }
 
     inner class AudioViewHolder(itemView : View, cl : View.OnClickListener) : NotesViewHolder(itemView, cl) {
-        private val titleTv : TextView = itemView.audioTitleTv
+        private val titleTv: TextView = itemView.audioTitleTv
         internal val playerView: CassettePlayerView = itemView.playerView
 
         init {
@@ -290,9 +289,11 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NotesViewHolder>(), View.
             titleTv.text = note.title
             titleTv.setTextColor(note.getTextColor())
 
-            val file = File((itemView.context as MainActivity).buildFilepath(note.text))
-            if (file.exists()) {
-                playerView.setContentUri(Uri.fromFile(file))
+            val file =
+                if (note.isTutorial) getAudioFromAssets(itemView.context, R.string.tutorial_audio)
+                else File(getFilepath(note.text))
+            if (file.exists() || note.isTutorial) {
+                playerView.setContentFile(file)
             }
 
             playerView.setCassetteColor(note.getTextColor())

@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="@dimen/card_margin"
+    android:elevation="@dimen/card_elevation"
     android:minHeight="@dimen/card_min_height"
     android:maxHeight="@dimen/card_max_height"
     xmlns:android="http://schemas.android.com/apk/res/android">

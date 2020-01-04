@@ -10,6 +10,7 @@ import android.text.Editable
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextWatcher
+import android.text.style.ImageSpan
 import android.text.style.StrikethroughSpan
 import android.util.AttributeSet
 import android.view.KeyEvent
@@ -17,6 +18,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import androidx.core.view.forEach
 
 
 class BulletPointView(context: Context, attrs: AttributeSet?, private val isInteractive: Boolean = true) : LinearLayout(context, attrs) {
@@ -60,10 +62,18 @@ class BulletPointView(context: Context, attrs: AttributeSet?, private val isInte
 
     fun setTextColor(color: Int) {
         cb.buttonDrawable?.setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
-        et?.setTextColor(color)
-        et?.highlightColor = color
-        tv?.setTextColor(color)
-        tv?.highlightColor = color
+        et?.let {
+            it.setTextColor(color)
+            it.highlightColor = color
+            it.text.getSpans(0, it.length(), ImageSpan::class.java).forEach {imgSp ->
+                if (imgSp.drawable.colorFilter != null)
+                    imgSp.drawable.setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
+            }
+        }
+        tv?.let {
+            it.setTextColor(color)
+            it.highlightColor = color
+        }
     }
 
     fun setText(text: String) {

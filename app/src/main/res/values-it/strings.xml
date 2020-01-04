@@ -31,8 +31,9 @@
     <string name="create_new_title">Crea una nota!</string>
     <string name="create_new_tutorial">Ti basta premere η per scriverne una</string>
     <string name="audio_title">Ascoltami</string>
+    <string name="tutorial_audio">it/tutorial.aac</string>
     <string name="delete_tutorial">Toccami e premi θ per eliminarmi</string>
     <string name="pin_tutorial">Toccami e premi ι per fissarmi in cima alle note</string>
     <string name="tutorial_end_title">Tutto chiaro?</string>
-    <string name="tutorial_end_text">Allora sei promosso a Esperto di KoteBook! Goditi la sensazione di non scordare più niente (;</string>
+    <string name="tutorial_end_text">Allora sei promosso a esperto di KoteBook! Goditi la sensazione di non scordare più niente (;</string>
 </resources>

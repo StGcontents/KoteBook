@@ -2,12 +2,17 @@ package com.stgi.kotebook
 
 import android.content.Context
 import android.graphics.PorterDuff
+import android.os.Environment
 import android.text.SpannableString
 import android.text.style.ImageSpan
 import android.view.View
 import androidx.fragment.app.Fragment
 import com.stgi.rodentia.BULLET_POINT_EMPTY
 import com.stgi.rodentia.BULLET_POINT_FULL
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import java.io.File
+import java.io.IOException
 
 const val ALPHA = 'α'
 const val BETA = 'β'
@@ -67,11 +72,45 @@ private fun getTutorialSpan(char: Char, context: Context, color: Int) =
                 ZETA -> context.getDrawable(R.drawable.back)!!.mutate().apply { setColorFilter(color, PorterDuff.Mode.SRC_ATOP) }
                 ETA -> context.getDrawable(R.drawable.span_add)
                 THETA -> context.getDrawable(R.drawable.delete)!!.mutate().apply { setColorFilter(color, PorterDuff.Mode.SRC_ATOP) }
-                IOTA -> context.getDrawable(R.drawable.span_pin)!!.mutate().apply { setColorFilter(color, PorterDuff.Mode.SRC_ATOP) }
+                IOTA -> context.getDrawable(R.drawable.unpinned)!!.mutate().apply { setColorFilter(color, PorterDuff.Mode.SRC_ATOP) }
                 else -> context.getDrawable(R.drawable.span_edit)
             }!!.mutate().apply {
-            val size = context.getPixels(R.dimen.span_size)
-            setBounds(0, 0, size, size)
+                val size = context.getPixels(R.dimen.span_size)
+                setBounds(0, 0, size, size)
         },
         ImageSpan.ALIGN_BOTTOM
     )
+
+const val DIRECTORY = "/KoteBook/"
+
+val directory: String by lazy {
+    File(Environment.getExternalStorageDirectory().absolutePath + DIRECTORY).also {
+        if (!it.exists())
+            it.mkdirs()
+    }.absolutePath
+}
+
+fun getFilepath(name: String?) = "$directory/$name"
+
+fun getAudioFromAssets(context: Context, stringId: Int): File =
+    File.createTempFile("tutorial", ".aac").also { fillAudioFromAssetsAsync(context, it, stringId).start() }
+
+private fun fillAudioFromAssetsAsync(context: Context, file: File, stringId: Int) = GlobalScope.async {
+    context.let {
+        val inStream = it.assets.open(it.getString(stringId))
+        val outStream = file.outputStream()
+        try {
+            val buffer = ByteArray(1024)
+            var count = inStream.read(buffer)
+            while (count > -1) {
+                outStream.write(buffer, 0, count)
+                count = inStream.read(buffer)
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            inStream.close()
+            outStream.close()
+        }
+    }
+}

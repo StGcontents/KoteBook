@@ -53,7 +53,7 @@ class NoteGenerator(private val context: Context) {
                             text = context.getString(R.string.welcome_text),
                             isRecording = false,
                             isPinned = true,
-                            color = context.resources.getColor(R.color.noteColor2, context.theme)
+                            color = context.resources.getColor(R.color.noteColor3, context.theme)
                         )
                     )
                     add(
@@ -62,7 +62,7 @@ class NoteGenerator(private val context: Context) {
                             text = context.getString(R.string.editor_tutorial),
                             isRecording = false,
                             isPinned = false,
-                            color = context.resources.getColor(R.color.noteColor7, context.theme),
+                            color = context.resources.getColor(R.color.noteColor26, context.theme),
                             isTutorial = true
                         )
                     )
@@ -72,7 +72,7 @@ class NoteGenerator(private val context: Context) {
                             text = context.getString(R.string.create_new_tutorial),
                             isRecording = false,
                             isPinned = true,
-                            color = context.resources.getColor(R.color.noteColor4, context.theme),
+                            color = context.resources.getColor(R.color.noteColor2, context.theme),
                             isTutorial = true
                         )
                     )
@@ -82,7 +82,7 @@ class NoteGenerator(private val context: Context) {
                             text = context.getString(R.string.delete_tutorial),
                             isRecording = false,
                             isPinned = false,
-                            color = context.resources.getColor(R.color.noteColor5, context.theme),
+                            color = context.resources.getColor(R.color.noteColor13, context.theme),
                             isTutorial = true
                         )
                     )
@@ -93,6 +93,16 @@ class NoteGenerator(private val context: Context) {
                             isRecording = false,
                             isPinned = false,
                             color = context.resources.getColor(R.color.noteColor6, context.theme),
+                            isTutorial = true
+                        )
+                    )
+                    add(
+                        generateNote(
+                            title = context.getString(R.string.audio_title),
+                            text = context.getString(R.string.tutorial_audio),
+                            isRecording = true,
+                            isPinned = false,
+                            color = context.resources.getColor(R.color.noteColor15, context.theme),
                             isTutorial = true
                         )
                     )
@@ -119,7 +129,7 @@ class NoteGenerator(private val context: Context) {
                     text = context.getString(R.string.tutorial_end_text),
                     isRecording = false,
                     isPinned = false,
-                    color = context.resources.getColor(R.color.noteColor8, context.theme)
+                    color = context.resources.getColor(R.color.noteColor7, context.theme)
                 )
             )
         }
