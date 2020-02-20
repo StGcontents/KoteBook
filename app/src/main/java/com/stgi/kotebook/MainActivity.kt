@@ -183,22 +183,31 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
     private fun getStaggeredLayout(portrait: Boolean) =
         StaggeredGridLayoutManager(if (portrait) 2 else 3, LinearLayoutManager.VERTICAL)
 
-    private fun consumeInput() {
+    private var tmpNote: String? = null
+
+    private fun consumeInput(): Boolean {
         when (currentStatus) {
             STATUS_ANNOTATE -> {
                 val str = inputText.getText().trimSpaces()
                 inputText.setText("")
-                if (TextUtils.isEmpty(str))
-                    return
+                tmpNote = if (TextUtils.isEmpty(str)) null else str
+                return tmpNote != null
+            }
+            STATUS_SAVE_NOTE -> {
+                val title: String = audioEt.text.toString().trimSpaces()
+                audioEt.setText("")
                 model.add(
                     Note.NoteData(
-                        text = str,
+                        title = title,
+                        text = tmpNote!!,
                         color = NoteGenerator(this).generateRandomColor()
                     )
                 )
+                tmpNote = null
             }
             STATUS_SAVE_REC -> audioEt.text = null
         }
+        return true
     }
 
     private fun hideAllOptionsBesides(v: View?) {
@@ -366,6 +375,7 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         return when (newStatus) {
             STATUS_INTERIM -> FabStationView.InterimStrategy(currentStrategy!!)
             STATUS_ANNOTATE -> AnnotateStrategy(this)
+            STATUS_SAVE_NOTE -> SaveNoteStrategy(this)
             STATUS_RECORDING -> RecStrategy(this)
             STATUS_SAVE_REC -> SaveRecStrategy(this)
             else -> {
@@ -410,7 +420,7 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
             builder.showPrimary()
                 .retractPrimary()
                 .hideTextInput()
-                .hideAudioInput()
+                .hideTitleInput()
                 .hideSecondary()
                 .hideTertiary()
                 .showSwipe()
@@ -447,6 +457,39 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
         }
 
         override fun onPrimaryClick() {
+            val inputConsumed = consumeInput()
+            if (!inputConsumed) {
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(inputText.windowToken, 0)
+            }
+            fabStation.inputText.clearFocus()
+            pushStatus(if (inputConsumed) STATUS_SAVE_NOTE else STATUS_INIT)
+        }
+
+        override fun onSecondaryClick() {
+            super.onSecondaryClick()
+            inputText.addBulletPoint()
+        }
+
+        override fun getStatus(): Int = STATUS_ANNOTATE
+    }
+
+    inner class SaveNoteStrategy(context: MainActivity) : FabStationView.OnClickStrategy(context) {
+        override fun getPrimaryDrawable(): Drawable? = getDrawable(R.drawable.done)
+        override fun getSecondaryDrawable(): Drawable? = getDrawable(R.drawable.cancel)
+
+        override fun shapeStation(builder: FabStationView.SetBuilder) {
+            super.shapeStation(builder)
+            builder.expandPrimary()
+                .showSecondary()
+                .showTitleInput()
+                .hideTertiary()
+                .hideSwipe()
+                .hideFan()
+                .apply()
+        }
+
+        override fun onPrimaryClick() {
             consumeInput()
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(inputText.windowToken, 0)
@@ -456,10 +499,19 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
 
         override fun onSecondaryClick() {
             super.onSecondaryClick()
-            inputText.addBulletPoint()
+            onBackPressed()
         }
 
-        override fun getStatus(): Int = STATUS_ANNOTATE
+        override fun onBackPressed(): Boolean {
+            fabStation.audioEt.text = null
+            fabStation.audioEt.clearFocus()
+            tmpNote = null
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(inputText.windowToken, 0)
+            return super.onBackPressed()
+        }
+
+        override fun getStatus(): Int = STATUS_SAVE_NOTE
     }
 
     inner class RecStrategy(context: MainActivity) : FabStationView.OnClickStrategy(context) {
@@ -513,7 +565,7 @@ class MainActivity : AppCompatActivity(), SwipeButton.OnSwipeListener,
             super.shapeStation(builder)
             builder.expandPrimary()
                 .showSecondary()
-                .showAudioInput()
+                .showTitleInput()
                 .hideTertiary()
                 .hideSwipe()
                 .hideFan()

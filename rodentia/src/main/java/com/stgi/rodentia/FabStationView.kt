@@ -28,11 +28,12 @@ import kotlin.math.max
 const val STATUS_INTERIM = -1
 const val STATUS_INIT = 1
 const val STATUS_ANNOTATE = 2
-const val STATUS_RECORDING = 4
-const val STATUS_SAVE_REC = 8
-const val STATUS_EDIT = 16
-const val STATUS_CONFIRM = 32
-const val STATUS_CLOCK = 64
+const val STATUS_SAVE_NOTE = 4
+const val STATUS_RECORDING = 8
+const val STATUS_SAVE_REC = 16
+const val STATUS_EDIT = 32
+const val STATUS_CONFIRM = 64
+const val STATUS_CLOCK = 128
 
 private const val ANGLE = 90.0f
 private const val BASE_ROW = 4
@@ -673,7 +674,7 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
                     }
                 }
             }
-            return hideAudioInput()
+            return hideTitleInput()
         }
 
         fun hideTextInput(): SetBuilder {
@@ -685,16 +686,20 @@ class FabStationView(context: Context, attributeSet: AttributeSet): ConstraintLa
             return this
         }
 
-        fun showAudioInput(): SetBuilder {
+        fun showTitleInput(): SetBuilder {
             chainedEnd = object: ChainedRunnable(chainedEnd) {
                 override fun runInternal() {
-                    station.post { station.audioEt.visibility = View.VISIBLE }
+                    station.post {
+                        station.audioEt.visibility = View.VISIBLE
+                        station.audioEt.hint = station.context.getString(R.string.insert_title)
+                        station.audioEt.requestFocus()
+                    }
                 }
             }
             return hideTextInput()
         }
 
-        fun hideAudioInput(): SetBuilder {
+        fun hideTitleInput(): SetBuilder {
             chainedStart = object: ChainedRunnable(chainedStart) {
                 override fun runInternal() {
                     station.post { station.audioEt.visibility = View.GONE }
